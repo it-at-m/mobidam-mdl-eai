@@ -37,7 +37,7 @@
     "eslint": "9.12.0",
     "eslint-plugin-vue": "9.29.1",
     "jsdom": "25.0.1",
-    "prettier": "3.3.3",
+    "prettier": "3.4.2",
     "typescript": "5.5.4",
     "unplugin-fonts": "1.1.1",
     "vite": "5.4.10",
