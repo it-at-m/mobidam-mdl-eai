@@ -10,11 +10,11 @@
         <relativePath />
     </parent>
 
-    <groupId>de.muenchen.refarch</groupId>
-    <artifactId>refarch-eai</artifactId>
+    <groupId>de.muenchen.mobidam</groupId>
+    <artifactId>mobidam-mdl-eai</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>refarch_eai</name>
-    <description>This is the default starting project for a EAI project based on the reference architecture of it@M</description>
+    <name>mobidam-mdl-eai</name>
+    <description>Mobidam MDL EAI.</description>
 
     <properties>
         <!-- Compilation -->
@@ -33,6 +33,7 @@
         <spotbugs-maven-plugin.version>4.8.6.4</spotbugs-maven-plugin.version>
         <spotbugs-annotations.version>4.8.6</spotbugs-annotations.version>
         <findsecbugs-plugin.version>1.13.0</findsecbugs-plugin.version>
+        <tika.version>3.0.0</tika.version>
 
         <!-- Logging -->
         <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
@@ -62,6 +63,12 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>de.muenchen.oss.mobidam</groupId>
+            <artifactId>mobidam-eai-commons-starter</artifactId>
+            <version>0.0.2</version>
+        </dependency>
 
         <!-- Camel -->
         <dependency>
@@ -134,10 +141,85 @@
             <artifactId>spotbugs-annotations</artifactId>
             <version>${spotbugs-annotations.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-http-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-aws2-s3</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>3.4.4</version>
+        </dependency>
+
+        <!-- SST Integration -->
+        <dependency>
+            <groupId>de.muenchen.oss.mobidam</groupId>
+            <artifactId>mobidam-sst-management-integration-starter</artifactId>
+            <version>0.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.owasp.encoder</groupId>
+            <artifactId>encoder</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parser-text-module</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>4.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <properties>
+                        <owner>Landeshauptstadt München | it@M</owner>
+                        <year>2024</year>
+                    </properties>
+                    <header>com/mycila/maven/plugin/license/templates/MIT.txt</header>
+                    <failIfMissing>true</failIfMissing>
+                    <useDefaultExcludes>true</useDefaultExcludes>
+                    <excludes>
+                        <exclude>**/*.txt</exclude>
+                        <exclude>**/*.yml</exclude>
+                        <exclude>src/test/resources/*.xml</exclude>
+                        <exclude>src/test/resources/testdata/*.*</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
