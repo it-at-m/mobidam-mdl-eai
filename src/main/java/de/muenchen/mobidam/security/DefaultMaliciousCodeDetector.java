@@ -22,11 +22,10 @@
  */
 package de.muenchen.mobidam.security;
 
+import java.io.InputStream;
 import org.apache.camel.Exchange;
 import org.owasp.encoder.Encode;
 import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
 
 @Component
 public class DefaultMaliciousCodeDetector implements MaliciousCodeDetector {

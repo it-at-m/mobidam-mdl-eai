@@ -24,6 +24,9 @@ package de.muenchen.mobidam.security;
 
 import de.muenchen.mobidam.config.MaliciousDataRegex;
 import de.muenchen.mobidam.sstmanagment.DurationLog;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.commons.csv.CSVFormat;
@@ -33,10 +36,6 @@ import org.apache.commons.io.input.CharSequenceReader;
 import org.apache.tika.parser.csv.TextAndCSVConfig;
 import org.apache.tika.parser.csv.TextAndCSVParser;
 import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 @Component
 @Slf4j

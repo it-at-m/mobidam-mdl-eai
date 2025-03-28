@@ -46,6 +46,8 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.release>${java.version}</maven.compiler.release>
+        <checkstyle.version>9.3</checkstyle.version>
+        <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
 
         <!-- Core Frameworks -->
         <camel-spring-boot-dependencies.version>4.8.0</camel-spring-boot-dependencies.version>
@@ -53,7 +55,6 @@
         <!-- Linting & Formatting -->
         <spotless-maven-plugin.version>2.28.0</spotless-maven-plugin.version>
         <itm-java-codeformat.version>1.0.10</itm-java-codeformat.version>
-        <pmd-maven-plugin.version>3.25.0</pmd-maven-plugin.version>
         <spotbugs-maven-plugin.version>4.8.6.4</spotbugs-maven-plugin.version>
         <spotbugs-annotations.version>4.8.6</spotbugs-annotations.version>
         <findsecbugs-plugin.version>1.13.0</findsecbugs-plugin.version>
@@ -216,6 +217,30 @@
 
     <build>
         <plugins>
+            <!-- Linter Checkstyle -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven-checkstyle-plugin.version}</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${checkstyle.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -317,33 +342,6 @@
                     <execution>
                         <goals>
                             <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>${pmd-maven-plugin.version}</version>
-                <configuration>
-                    <minimumTokens>100</minimumTokens>
-                    <targetJdk>${java.version}</targetJdk>
-                    <printFailingErrors>true</printFailingErrors>
-                    <linkXRef>false</linkXRef>
-                    <includeTests>true</includeTests>
-                    <excludeRoots>
-                        <excludeRoot>target/generated-sources</excludeRoot>
-                        <excludeRoot>target/generated-test-sources</excludeRoot>
-                    </excludeRoots>
-                    <rulesets>
-                        <ruleset>../shared-files/pmd-ruleset.xml</ruleset>
-                    </rulesets>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                            <goal>cpd-check</goal>
                         </goals>
                     </execution>
                 </executions>

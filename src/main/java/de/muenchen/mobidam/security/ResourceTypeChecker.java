@@ -23,6 +23,9 @@
 package de.muenchen.mobidam.security;
 
 import de.muenchen.mobidam.sstmanagment.DurationLog;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.tika.Tika;
@@ -33,10 +36,6 @@ import org.apache.tika.parser.csv.TextAndCSVParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.stereotype.Service;
 import org.xml.sax.ContentHandler;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 @Service
 @Slf4j

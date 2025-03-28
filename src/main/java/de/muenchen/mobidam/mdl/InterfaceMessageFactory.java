@@ -25,20 +25,17 @@ package de.muenchen.mobidam.mdl;
 import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.integration.client.domain.DatentransferCreateDTO;
 import de.muenchen.mobidam.sstmanagment.EreignisTyp;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.aws2.s3.AWS2S3Constants;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-
 @Component
 @AllArgsConstructor
 public class InterfaceMessageFactory {
 
-
     public void mdlMessageStart(Exchange exchange) {
-
 
         var dto = new DatentransferCreateDTO();
         dto.setEreignis(EreignisTyp.BEGINN.name());
@@ -49,7 +46,6 @@ public class InterfaceMessageFactory {
     }
 
     public void mdlMessageSuccess(Exchange exchange) {
-
 
         var dto = new DatentransferCreateDTO();
         dto.setEreignis(EreignisTyp.ERFOLG.name());
@@ -63,7 +59,6 @@ public class InterfaceMessageFactory {
 
     public void mdlMessageError(Exchange exchange) {
 
-
         var dto = new DatentransferCreateDTO();
         dto.setEreignis(EreignisTyp.FEHLER.name());
         dto.setZeitstempel(LocalDateTime.now());
@@ -75,7 +70,6 @@ public class InterfaceMessageFactory {
     }
 
     public void mdlkMessageEnd(Exchange exchange) {
-
 
         var dto = new DatentransferCreateDTO();
         dto.setEreignis(EreignisTyp.ENDE.name());

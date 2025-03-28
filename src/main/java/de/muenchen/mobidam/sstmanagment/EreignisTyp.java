@@ -24,5 +24,9 @@ package de.muenchen.mobidam.sstmanagment;
 
 public enum EreignisTyp {
 
-    BEGINN, ENDE, ERFOLG, WARNUNGEN, FEHLER
+    BEGINN,
+    ENDE,
+    ERFOLG,
+    WARNUNGEN,
+    FEHLER
 }
