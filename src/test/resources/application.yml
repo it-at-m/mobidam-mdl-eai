@@ -1,0 +1,56 @@
+# Sollte sich der Camel Main Thread nach dem Start wieder beenden, folgende Property aktivieren (http://camel.apache.org/spring-boot.html).
+# camel.springboot.main-run-controller=true
+
+# Spring-Boot Common-Application-Properties https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+
+management:
+  endpoints:
+    enabled-by-default: false
+
+spring:
+  profiles:
+    active: test
+
+logging:
+  level:
+    org:
+      springframework: INFO
+
+camel:
+  springboot:
+    tracing: false
+
+de.muenchen.mobidam:
+  integration:
+    baseUrl: https://...
+    interfaces:
+      mdlTest:
+        mobidam-sst-id: 999fcf2d-25bb-4fa9-85ff-f7ed12349999
+        name: MDL Test
+        mdl-url: mock:mdlInfo
+        cron-expression: '0 0 0 ? * *'
+        s3-object-path: MDAS/Mdl/dev/test.json
+        s3-date-format: yyyyMMdd_HHmmss
+        s3-bucket: int-mdasc-mdasdev
+        allowed-resource-types:
+          - json
+          - plain
+        malicious-code-detection-enabled: true
+  data:
+    review-specification:
+      malicious-data-regex:
+        excel: ^[=+-@]^\w*
+        script: .*\.(?i)(exe|bat|sh|ps1|psd1|psm1)
+        sql: (?i)(SELECT|INSERT|DELETE|DROP|UPDATE)\s.*
+        xss: (?i).*(<script>|<embed>|<img>|<body>|<iframe>|<link>|<input>|<div>|<table>|<object>).*
+        shell: (?i)(exec|eval|system)\s*\(
+    defined-resource-types:
+      resource-types:
+        json:
+          allowed-mime-types: application/json, text/plain
+  common:
+    s3:
+      bucket-credential-configs:
+        int-mdasc-mdasdev:
+          access-key-env-var: MOBIDAM_INT-MDASC-MDASDEV_ACCESS_KEY
+          secret-key-env-var: MOBIDAM_INT-MDASC-MDASDEV_SECRET_KEY

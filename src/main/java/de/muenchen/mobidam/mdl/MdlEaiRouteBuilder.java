@@ -35,7 +35,9 @@ import org.apache.camel.component.aws2.s3.AWS2S3Constants;
 import org.apache.camel.http.common.HttpMethods;
 import org.apache.camel.impl.engine.DefaultStreamCachingStrategy;
 import org.apache.camel.spi.StreamCachingStrategy;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MdlEaiRouteBuilder extends RouteBuilder {
 
     public static final String MOBIDAM_S3_ROUTE = "direct:mdl-info";

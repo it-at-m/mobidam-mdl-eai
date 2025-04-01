@@ -69,7 +69,7 @@ public class InterfaceMessageFactory {
         exchange.getMessage().setBody(dto);
     }
 
-    public void mdlkMessageEnd(Exchange exchange) {
+    public void mdlMessageEnd(Exchange exchange) {
 
         var dto = new DatentransferCreateDTO();
         dto.setEreignis(EreignisTyp.ENDE.name());

@@ -22,30 +22,14 @@
  */
 package de.muenchen.mobidam;
 
-import lombok.RequiredArgsConstructor;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 
-@Component
-@RequiredArgsConstructor
-public class EaiRouteBuilder extends RouteBuilder {
+import java.io.FileInputStream;
 
-    @Value("${output}")
-    private String outputRoute;
-
-    public static final String DIRECT_ROUTE = "direct:eai-route";
-
+public class MdlInfoMock implements Processor {
     @Override
-    public void configure() {
-        onException(Exception.class).handled(true).log(LoggingLevel.ERROR, "${exception}");
-
-        from(DIRECT_ROUTE)
-                .routeId("eai-route")
-                .log(LoggingLevel.DEBUG, "de.muenchen",
-                        "Add camel routing... (https://camel.apache.org/components/latest/eips/enterprise-integration-patterns.html).")
-                .to(outputRoute);
+    public void process(Exchange exchange) throws Exception {
+        exchange.getIn().setBody(new FileInputStream("src/test/resources/placeholder.json"));
     }
-
 }

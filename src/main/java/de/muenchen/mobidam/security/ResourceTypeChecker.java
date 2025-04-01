@@ -34,6 +34,9 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.csv.TextAndCSVParser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.xml.sax.ContentHandler;
 
@@ -41,11 +44,13 @@ import org.xml.sax.ContentHandler;
 @Slf4j
 public class ResourceTypeChecker {
 
-    public static final MediaType TEXT_CSV_TYPE = new MediaType("text", "csv");
+    public static final MediaType APPLICATION_JSON_TYPE = new MediaType("application", "json");
 
     private final Tika tika = new Tika();
 
     private final DurationLog parseDuration = new DurationLog("Tika-Mime-Type-Detection");
+
+    private final DefaultMaliciousCodeDetector detector = new DefaultMaliciousCodeDetector();
 
     public boolean check(final InputStream stream, final List<String> allowedMimeTypes, final Exchange exchange)
             throws IOException {
@@ -66,27 +71,12 @@ public class ResourceTypeChecker {
 
     private String getResourceType(final InputStream stream, String contentType, Exchange exchange) throws IOException {
 
-        if (contentType != null && contentType.contains(TEXT_CSV_TYPE.toString())) {
-            ContentHandler handler = new BodyContentHandler(-1);
-            TextAndCSVParser parser = new TextAndCSVParser();
-            Metadata metadata = new Metadata();
-            ParseContext context = new ParseContext();
-            try {
-                parseDuration.startDebug();
-                parser.parse(stream, handler, metadata, context);
-                parseDuration.endDebug();
-            } catch (Exception e) {
-                throw new IOException(e);
+        if (contentType != null && contentType.contains(APPLICATION_JSON_TYPE.toString())) {
+            if(detector.isValidData(stream, exchange)){
+                return APPLICATION_JSON_TYPE.toString();
             }
-            log.debug("Tika file metadata {}", metadata);
-            String tikaContentType = metadata.get(Metadata.CONTENT_TYPE);
-            if (tikaContentType.toLowerCase().contains(TEXT_CSV_TYPE.toString())) {
-                exchange.getIn().setHeader(TextAndCSVParser.DELIMITER_PROPERTY.getName(), metadata.get(TextAndCSVParser.DELIMITER_PROPERTY));
-                return TEXT_CSV_TYPE.toString();
-            } else {
-                log.warn("File content too small, Tika heuristic cannot determine 'text/csv' with the necessary certainty.");
-                return "file-content-too-small";
-            }
+            return "wrong-resource-type";
+
         } else
             return tika.detect(stream);
     }

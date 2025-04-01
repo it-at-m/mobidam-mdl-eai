@@ -63,15 +63,26 @@ oauth2:
     id: ...
 
 de.muenchen.mobidam:
+  integration:
+    baseUrl: ...
+    interfaces:
+      interface-1:
+        mobidam-sst-id:
+        name:
+        mdl-url:
+        cron-expression:
+        s3-object-path:
+        s3-date-format:
+        s3-bucket:
+        allowed-resource-types:
+        malicious-code-detection-enabled:
   data:
     review-specification:
       malicious-data-regex:
         key:
     defined-resource-types:
       resource-types:
-        xml:
-          allowed-mime-types:
-        csv:
+        json:
           allowed-mime-types:
   eai:
     cacerts-file: ...

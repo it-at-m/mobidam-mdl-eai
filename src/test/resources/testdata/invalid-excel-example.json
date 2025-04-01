@@ -1,0 +1,19 @@
+{
+  "vehicle": {
+    "make": "Toyota",
+    "model": "Corolla",
+    "year": 2020,
+    "color": "=HYPERLINK('javascript:alert(\"Excel Attack!\")', 'Click Me')"
+  },
+  "owner": {
+    "name": "Alice Johnson"
+  },
+  "maintenance": [
+    { "service": "Oil Change", "date": "2025-03-01" },
+    { "service": "Tire Rotation", "date": "2025-02-01" }
+  ],
+  "trips": [
+    { "destination": "San Francisco", "mileage": 100 },
+    { "destination": "Los Angeles", "mileage": 250 }
+  ]
+}
