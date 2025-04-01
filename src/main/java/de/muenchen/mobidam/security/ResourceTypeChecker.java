@@ -72,7 +72,7 @@ public class ResourceTypeChecker {
     private String getResourceType(final InputStream stream, String contentType, Exchange exchange) throws IOException {
 
         if (contentType != null && contentType.contains(APPLICATION_JSON_TYPE.toString())) {
-            if(detector.isValidData(stream, exchange)){
+            if (detector.isValidData(stream, exchange)) {
                 return APPLICATION_JSON_TYPE.toString();
             }
             return "wrong-resource-type";

@@ -69,7 +69,7 @@ public class ResourceTypeProcessorTest {
     }
 
     @Test
-    public void testCheckWithInvalidMimeType() throws Exception{
+    public void testCheckWithInvalidMimeType() throws Exception {
         Exchange exchange = createExchange(List.of(MediaType.APPLICATION_OCTET_STREAM.getSubtype()));
         try (InputStream resStream = this.getClass().getResourceAsStream("/testdata/valid.json")) {
             if (resStream == null) throw new IOException("Resource not found: /testdata/valid.json");

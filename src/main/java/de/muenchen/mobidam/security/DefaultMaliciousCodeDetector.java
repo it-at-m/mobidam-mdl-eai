@@ -22,6 +22,7 @@
  */
 package de.muenchen.mobidam.security;
 
+import de.muenchen.mobidam.config.MaliciousDataRegex;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,12 +31,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import de.muenchen.mobidam.config.MaliciousDataRegex;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Exchange;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.apache.camel.Exchange;
 import org.json.JSONObject;
 import org.owasp.encoder.Encode;
 import org.springframework.stereotype.Component;
@@ -56,7 +55,7 @@ public class DefaultMaliciousCodeDetector implements MaliciousCodeDetector {
     public boolean isValidData(final InputStream stream, Exchange exchange) throws IOException {
         String jsonString = readInputStream(stream);
         try {
-            Object json = new JSONObject(jsonString);  // Try parsing as JSONObject
+            Object json = new JSONObject(jsonString); // Try parsing as JSONObject
             return isValidJson(json);
         } catch (JSONException e) {
             try {
@@ -87,11 +86,11 @@ public class DefaultMaliciousCodeDetector implements MaliciousCodeDetector {
         } else if (json instanceof JSONArray) {
             return validateJsonArray((JSONArray) json);
         }
-        return true;  // If it's a valid structure, return true
+        return true; // If it's a valid structure, return true
     }
 
     private boolean validateJsonObject(JSONObject jsonObject) {
-        for (Iterator<String> it = jsonObject.keys(); it.hasNext(); ) {
+        for (Iterator<String> it = jsonObject.keys(); it.hasNext();) {
             String key = it.next();
             Object value = jsonObject.get(key);
             if (value instanceof String) {
@@ -99,9 +98,9 @@ public class DefaultMaliciousCodeDetector implements MaliciousCodeDetector {
                 log.trace("JSON value for key {}: {}", key, textContent);
                 String clean = Encode.forHtml(textContent);
                 if (!textContent.equals(clean)) {
-                    return false;  // Found potentially malicious content
+                    return false; // Found potentially malicious content
                 }
-                if(checkForMaliciousPattern(clean)) {
+                if (checkForMaliciousPattern(clean)) {
                     return false;
                 }
             } else if (value instanceof JSONObject) {
@@ -127,9 +126,9 @@ public class DefaultMaliciousCodeDetector implements MaliciousCodeDetector {
                 log.trace("JSON array element: {}", textContent);
                 String clean = Encode.forHtml(textContent);
                 if (!textContent.equals(clean)) {
-                    return false;  // Found potentially malicious content
+                    return false; // Found potentially malicious content
                 }
-                if(checkForMaliciousPattern(clean)) {
+                if (checkForMaliciousPattern(clean)) {
                     return false;
                 }
             } else if (value instanceof JSONObject) {
@@ -147,8 +146,8 @@ public class DefaultMaliciousCodeDetector implements MaliciousCodeDetector {
         return true;
     }
 
-    private boolean checkForMaliciousPattern(String cell){
-        if(maliciousPatterns != null) {
+    private boolean checkForMaliciousPattern(String cell) {
+        if (maliciousPatterns != null) {
             for (Map.Entry<String, Pattern> entry : maliciousPatterns.getMaliciousDataPatterns().entrySet()) {
                 var match = entry.getValue().matcher(cell).matches();
                 if (match) {
