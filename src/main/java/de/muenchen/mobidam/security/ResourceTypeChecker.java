@@ -22,23 +22,14 @@
  */
 package de.muenchen.mobidam.security;
 
-import de.muenchen.mobidam.sstmanagment.DurationLog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.tika.Tika;
-import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.csv.TextAndCSVParser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
-import org.xml.sax.ContentHandler;
 
 @Service
 @Slf4j
@@ -47,8 +38,7 @@ public class ResourceTypeChecker {
     public static final MediaType APPLICATION_JSON_TYPE = new MediaType("application", "json");
 
     private final Tika tika = new Tika();
-
-    private final DurationLog parseDuration = new DurationLog("Tika-Mime-Type-Detection");
+    ;
 
     private final DefaultMaliciousCodeDetector detector = new DefaultMaliciousCodeDetector();
 

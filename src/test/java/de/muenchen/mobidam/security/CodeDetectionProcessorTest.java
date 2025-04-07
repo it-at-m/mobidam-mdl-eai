@@ -80,9 +80,9 @@ public class CodeDetectionProcessorTest {
     }
 
     @Test
-    public void testProcessJsonWithExtensionExe() throws Exception {
+    public void testProcessJsonWithExcel() throws Exception {
         Exchange exchange = createExchange(List.of(ResourceTypeChecker.APPLICATION_JSON_TYPE.getSubtype()));
-        assertInvalid("/testdata/invalid-script-example.json", exchange);
+        assertInvalid("/testdata/invalid-excel-example.json", exchange);
     }
 
     @Test

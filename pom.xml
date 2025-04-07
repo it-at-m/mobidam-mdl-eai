@@ -51,6 +51,7 @@
 
         <!-- Core Frameworks -->
         <camel-spring-boot-dependencies.version>4.8.0</camel-spring-boot-dependencies.version>
+        <camel.version>4.8.0</camel.version>
 
         <!-- Linting & Formatting -->
         <spotless-maven-plugin.version>2.28.0</spotless-maven-plugin.version>
@@ -138,21 +139,14 @@
 
         <!-- Logging -->
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-brave</artifactId>
-        </dependency>
-        <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>${logstash-logback-encoder.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-micrometer-starter</artifactId>
+            <version>${camel.version}</version>
         </dependency>
 
         <!-- Other -->
