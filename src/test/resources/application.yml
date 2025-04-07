@@ -27,6 +27,7 @@ de.muenchen.mobidam:
       mdlTest:
         mobidam-sst-id: 999fcf2d-25bb-4fa9-85ff-f7ed12349999
         name: MDL Test
+        identifier: mdlTest
         mdl-url: mock:mdlInfo
         cron-expression: '0 0 0 ? * *'
         s3-object-path: MDAS/Mdl/dev/test.json

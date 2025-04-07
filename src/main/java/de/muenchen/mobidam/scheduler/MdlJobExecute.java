@@ -24,6 +24,7 @@ package de.muenchen.mobidam.scheduler;
 
 import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.config.Interfaces;
+import de.muenchen.mobidam.mdl.InterfaceDTO;
 import de.muenchen.mobidam.mdl.MdlEaiRouteBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,7 +53,9 @@ public class MdlJobExecute implements Job {
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        var identifier = context.getJobDetail().getJobDataMap().get(Constants.INTERFACE_TYPE);
+        String identifier = (String) context.getJobDetail().getJobDataMap().get(Constants.INTERFACE_TYPE);
+        InterfaceDTO sst = getMobidamInterfaces().getInterfaces().get(identifier);
+        sst.setIdentifier(identifier);
         log.info("Scheduler starts mdl '{}' request at '{}'.", identifier, context.getFireTime().toString());
 
         var exchange = ExchangeBuilder.anExchange(getCamelContext())

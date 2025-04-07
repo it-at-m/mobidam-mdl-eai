@@ -69,6 +69,7 @@ de.muenchen.mobidam:
       interface-1:
         mobidam-sst-id:
         name:
+        identifier:
         mdl-url:
         cron-expression:
         s3-object-path:
