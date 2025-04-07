@@ -38,7 +38,6 @@ public class ResourceTypeChecker {
     public static final MediaType APPLICATION_JSON_TYPE = new MediaType("application", "json");
 
     private final Tika tika = new Tika();
-    ;
 
     private final DefaultMaliciousCodeDetector detector = new DefaultMaliciousCodeDetector();
 
