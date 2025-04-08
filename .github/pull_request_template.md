@@ -13,7 +13,6 @@ Issues:
 - [ ] Build/Test workflow has successfully finished
 - [ ] Release notes are complemented
 - [ ] Documentation is complemented (operator manual, system specification)
-- [ ] Frontend is locally smoke-tested
 - [ ] Board is updated
 - [ ] Infrastructure is adjusted
 
