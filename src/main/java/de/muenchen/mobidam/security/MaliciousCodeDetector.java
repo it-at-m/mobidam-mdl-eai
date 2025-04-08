@@ -20,14 +20,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam;
+package de.muenchen.mobidam.security;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import java.io.InputStream;
+import org.apache.camel.Exchange;
 
-@SpringBootApplication
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+public interface MaliciousCodeDetector {
+
+    boolean isValidData(final InputStream stream, Exchange exchange) throws Exception;
 }

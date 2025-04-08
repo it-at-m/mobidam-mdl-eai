@@ -20,14 +20,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam;
+package de.muenchen.mobidam.mdl;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import java.util.List;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@SpringBootApplication
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Getter
+public class InterfaceDTO {
+
+    private UUID mobidamSstId;
+    private String name;
+    private String identifier;
+    private String mdlUrl;
+    private String cronExpression;
+    private String s3ObjectPath;
+    private String s3DateFormat;
+    private String s3Bucket;
+    private List<String> allowedResourceTypes;
+    private Boolean maliciousCodeDetectionEnabled;
+
 }

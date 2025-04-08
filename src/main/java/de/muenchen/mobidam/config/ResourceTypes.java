@@ -20,14 +20,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam;
+package de.muenchen.mobidam.config;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import de.muenchen.mobidam.exception.MobidamException;
+import java.util.List;
+import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-@SpringBootApplication
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
+@Component
+@ConfigurationProperties(prefix = "de.muenchen.mobidam.data.defined-resource-types")
+@Getter
+@Setter
+public class ResourceTypes {
+
+    private Map<String, ResourceType> resourceTypes;
+
+    public List<String> getResourceTypes(List<String> expectedTypes) throws MobidamException {
+
+        if (getResourceTypes() == null) {
+            throw new MobidamException("Invalid configuration of types.");
+        }
+
+        if (expectedTypes.isEmpty() || getResourceTypes().isEmpty())
+            return List.of();
+
+        return expectedTypes.stream().flatMap(type -> getResourceTypes().entrySet().stream().filter(entrySet -> entrySet.getKey().equals(type)))
+                .flatMap(entrySet -> entrySet.getValue().getAllowedMimeTypes().stream()).distinct().toList();
     }
 }

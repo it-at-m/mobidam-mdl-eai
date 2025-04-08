@@ -22,12 +22,14 @@
  */
 package de.muenchen.mobidam;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 
-@SpringBootApplication
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
+import java.io.FileInputStream;
+
+public class MdlInfoMock implements Processor {
+    @Override
+    public void process(Exchange exchange) throws Exception {
+        exchange.getIn().setBody(new FileInputStream("src/test/resources/placeholder.json"));
     }
 }

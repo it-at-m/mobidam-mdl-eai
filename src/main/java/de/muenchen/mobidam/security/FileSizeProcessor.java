@@ -20,14 +20,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam;
+package de.muenchen.mobidam.security;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.StreamCache;
+import org.springframework.stereotype.Service;
 
-@SpringBootApplication
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
+@Service
+@NoArgsConstructor
+@Slf4j
+@Getter
+public class FileSizeProcessor implements Processor {
+
+    private long maxStreamSize = 0L;
+
+    @Override
+    public void process(Exchange exchange) throws Exception {
+        StreamCache stream = exchange.getMessage().getBody(StreamCache.class);
+        stream.reset();
+        maxStreamSize = Math.max(maxStreamSize, stream.length());
     }
+
 }

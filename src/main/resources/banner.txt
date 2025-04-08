@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------------
- refarch-eai
+ mdl-eai
 
  Application Name    : ${spring.application.name} (${info.application.version})
  Java Version        : ${info.build.java.version}

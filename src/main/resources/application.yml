@@ -1,59 +1,96 @@
 camel:
   springboot:
+    #    Sollte sich der Camel Main Thread nach dem Start wieder beenden, folgende Property aktivieren (http://camel.apache.org/spring-boot.html).
     main-run-controller: true
     tracing: false
-  servlet:
-    mapping:
-      context-path: /api/*
+  component:
+    aws2-s3:
+      region: ...
+      override-endpoint: ...
+    http:
+      proxy-auth-host: ...
+      proxy-auth-port: ...
+      proxy-auth-scheme: ...
 
 spring:
   application:
-    name: @project.artifactId@
+    name: '@project.artifactId@'
+  security:
+    oauth2:
+      client:
+        registration:
+          custom:
+            provider: ...
+            client-id: ...
+            client-secret: ...
+            authorization-grant-type: ...
+        provider:
+          custom:
+            token-uri: ...
 
-server:
-  shutdown: "graceful"
-
+# https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html
 management:
   endpoints:
     enabled-by-default: false
     web:
       exposure:
-        include: health,info, prometheus
-      path-mapping:
-        prometheus: metrics
+        include: health,info,metrics
   endpoint:
     info:
       enabled: true
     health:
       enabled: true
-      probes:
-        enabled: true
-    prometheus:
+    metrics:
       enabled: true
   info:
     env:
       enabled: true
     camel:
       enabled: false
-  health:
-    livenessstate:
-      enabled: true
-    readinessstate:
-      enabled: true
 
 info:
   application:
-    name: @project.artifactId@
-    version: @project.version@
-    description: @project.description@
-  build:
-    java.version: @java.version@
-    camel.version: @camel-spring-boot-dependencies.version@
+    name: '@project.artifactId@'
+    version: '@project.version@'
 
 logging:
   level:
     org:
       springframework: INFO
 
-# Custom properties
-output: direct:foo
+oauth2:
+  registration:
+    id: ...
+
+de.muenchen.mobidam:
+  integration:
+    baseUrl: ...
+    interfaces:
+      interface-1:
+        mobidam-sst-id:
+        name:
+        identifier:
+        mdl-url:
+        cron-expression:
+        s3-object-path:
+        s3-date-format:
+        s3-bucket:
+        allowed-resource-types:
+        malicious-code-detection-enabled:
+  data:
+    review-specification:
+      malicious-data-regex:
+        key:
+    defined-resource-types:
+      resource-types:
+        json:
+          allowed-mime-types:
+  eai:
+    cacerts-file: ...
+    cacerts-password: ...
+  common:
+    s3:
+      bucket-credential-configs:
+        s3-bucket-1:
+          access-key-env-var: ...
+          secret-key-env-var: ...

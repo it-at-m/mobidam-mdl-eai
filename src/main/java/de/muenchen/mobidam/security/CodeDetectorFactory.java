@@ -20,14 +20,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam;
+package de.muenchen.mobidam.security;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-@SpringBootApplication
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
+@Component
+@RequiredArgsConstructor
+public class CodeDetectorFactory {
+
+    private final DefaultMaliciousCodeDetector defaultMaliciousCodeDetector;
+
+    private final Map<String, MaliciousCodeDetector> map = new HashMap<>();
+
+    public MaliciousCodeDetector getCodeDetector(final String mimeType) {
+        return map.getOrDefault(mimeType, defaultMaliciousCodeDetector);
     }
+
 }

@@ -22,12 +22,11 @@
  */
 package de.muenchen.mobidam;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+public class Constants {
 
-@SpringBootApplication
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+    public static final String MOBIDAM_LOGGER = "de.muenchen.mobidam";
+    public static final String INTERFACE_TYPE = "MDL_INTERFACE_TYPE";
+
+    // Headers for s3 bucket credentials
+    public static final String QUARANTINE_PREFIX = "quarantine/";
 }
