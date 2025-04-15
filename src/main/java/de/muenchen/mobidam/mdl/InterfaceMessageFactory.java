@@ -22,7 +22,6 @@
  */
 package de.muenchen.mobidam.mdl;
 
-import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.eai.common.CommonConstants;
 import de.muenchen.mobidam.integration.client.domain.DatentransferCreateDTO;

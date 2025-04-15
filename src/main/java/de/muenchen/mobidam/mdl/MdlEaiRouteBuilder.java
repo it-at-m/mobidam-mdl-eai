@@ -25,7 +25,7 @@ package de.muenchen.mobidam.mdl;
 import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.eai.common.CommonConstants;
-import de.muenchen.mobidam.exception.MobidamSecurityException;
+import de.muenchen.mobidam.eai.common.exception.MobidamSecurityException;
 import de.muenchen.mobidam.s3.S3ObjectPathBuilder;
 import javax.net.ssl.SSLException;
 import org.apache.camel.CamelContext;
