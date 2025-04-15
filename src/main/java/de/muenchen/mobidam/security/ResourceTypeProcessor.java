@@ -23,9 +23,11 @@
 package de.muenchen.mobidam.security;
 
 import de.muenchen.mobidam.Constants;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.ResourceTypes;
+import de.muenchen.mobidam.eai.common.CommonConstants;
 import de.muenchen.mobidam.exception.MobidamSecurityException;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
+
 import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +47,7 @@ public class ResourceTypeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        var mdlInterface = exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class);
+        var mdlInterface = exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class);
         if (mdlInterface.getAllowedResourceTypes() == null) {
             return;
         }

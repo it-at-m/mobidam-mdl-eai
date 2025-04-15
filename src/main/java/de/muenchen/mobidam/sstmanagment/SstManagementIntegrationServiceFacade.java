@@ -23,9 +23,10 @@
 package de.muenchen.mobidam.sstmanagment;
 
 import de.muenchen.mobidam.Constants;
+import de.muenchen.mobidam.config.InterfaceDTO;
+import de.muenchen.mobidam.eai.common.CommonConstants;
 import de.muenchen.mobidam.integration.client.domain.DatentransferCreateDTO;
 import de.muenchen.mobidam.integration.service.SstManagementIntegrationService;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
 import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,7 @@ public class SstManagementIntegrationServiceFacade {
     private SstManagementIntegrationService service;
 
     public void isActivated(Exchange exchange) throws Exception {
-        var mdlInterface = exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class);
+        var mdlInterface = exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class);
         exchange.getIn().setBody(service.isActivated(mdlInterface.getMobidamSstId().toString()));
     }
 

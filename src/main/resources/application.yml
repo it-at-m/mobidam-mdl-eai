@@ -70,7 +70,7 @@ de.muenchen.mobidam:
         mobidam-sst-id:
         name:
         identifier:
-        mdl-url:
+        url:
         cron-expression:
         s3-object-path:
         s3-date-format:

@@ -22,6 +22,7 @@
  */
 package de.muenchen.mobidam;
 
+import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.Interfaces;
 import de.muenchen.mobidam.config.ResourceTypes;
 import de.muenchen.mobidam.eai.common.CommonConstants;
@@ -29,7 +30,6 @@ import de.muenchen.mobidam.eai.common.config.EnvironmentReader;
 import de.muenchen.mobidam.exception.MobidamSecurityException;
 import de.muenchen.mobidam.integration.client.domain.DatentransferCreateDTO;
 import de.muenchen.mobidam.integration.service.SstManagementIntegrationService;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
 import de.muenchen.mobidam.mdl.MdlEaiRouteBuilder;
 import de.muenchen.mobidam.security.ResourceTypeProcessor;
 import de.muenchen.mobidam.sstmanagment.EreignisTyp;
@@ -53,6 +53,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
@@ -70,7 +71,7 @@ class MdlRouteS3Test {
     @Autowired
     private CamelContext camelContext;
 
-    @Produce(MdlEaiRouteBuilder.MOBIDAM_S3_ROUTE)
+    @Produce
     private ProducerTemplate startMdlInfoRequest;
 
     @Autowired
@@ -81,6 +82,9 @@ class MdlRouteS3Test {
 
     @EndpointInject("mock:s3Destination")
     private MockEndpoint s3Destination;
+
+    @Value("${de.muenchen.mobidam.integration.job-execute-route:endpointUriNotFoundDefault}")
+    private String endpointUri;
 
     @MockBean
     private WebClient wb; // Mock WebClient in dependency mobidam-sst-management-integration-starter
@@ -110,7 +114,7 @@ class MdlRouteS3Test {
         camelContext.start();
 
         var mdlRequest = ExchangeBuilder.anExchange(camelContext)
-                .withHeader(Constants.INTERFACE_TYPE, getInterfaceDTO())
+                .withHeader(CommonConstants.INTERFACE_TYPE, getInterfaceDTO())
                 .build();
 
         Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(true);
@@ -120,7 +124,7 @@ class MdlRouteS3Test {
         mdlInfo.whenAnyExchangeReceived(new MdlInfoMock());
         s3Destination.expectedMessageCount(1);
 
-        startMdlInfoRequest.send(mdlRequest);
+        startMdlInfoRequest.send(endpointUri, mdlRequest);
         s3Destination.assertIsSatisfied();
         var exchange = s3Destination.getExchanges().get(0);
 
@@ -152,12 +156,12 @@ class MdlRouteS3Test {
         camelContext.start();
 
         var mdlRequest = ExchangeBuilder.anExchange(camelContext)
-                .withHeader(Constants.INTERFACE_TYPE, getInterfaceDTO())
+                .withHeader(CommonConstants.INTERFACE_TYPE, getInterfaceDTO())
                 .build();
 
         Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(false);
 
-        startMdlInfoRequest.send(mdlRequest);
+        startMdlInfoRequest.send(endpointUri, mdlRequest);
 
         Mockito.verify(this.sstService, Mockito.times(1)).isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999");
         Mockito.verify(this.sstService, Mockito.times(0)).logDatentransfer(datentransferCaptor.capture());
@@ -176,12 +180,12 @@ class MdlRouteS3Test {
         camelContext.start();
 
         var mdlRequest = ExchangeBuilder.anExchange(camelContext)
-                .withHeader(Constants.INTERFACE_TYPE, getInterfaceDTO())
+                .withHeader(CommonConstants.INTERFACE_TYPE, getInterfaceDTO())
                 .build();
 
         Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(true);
 
-        startMdlInfoRequest.send(mdlRequest);
+        startMdlInfoRequest.send(endpointUri, mdlRequest);
 
         Mockito.verify(this.sstService, Mockito.times(1)).isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999");
         Mockito.verify(this.sstService, Mockito.times(3)).logDatentransfer(datentransferCaptor.capture());
@@ -204,14 +208,14 @@ class MdlRouteS3Test {
         camelContext.start();
 
         var mdlRequest = ExchangeBuilder.anExchange(camelContext)
-                .withHeader(Constants.INTERFACE_TYPE, getInterfaceDTO())
+                .withHeader(CommonConstants.INTERFACE_TYPE, getInterfaceDTO())
                 .build();
 
         Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(true);
 
         Mockito.doThrow(new MobidamSecurityException("danger!")).when(resourceTypeProcessor).process(isA(Exchange.class));
 
-        startMdlInfoRequest.send(mdlRequest);
+        startMdlInfoRequest.send(endpointUri, mdlRequest);
 
         Mockito.verify(this.sstService, Mockito.times(1)).isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999");
         Mockito.verify(this.sstService, Mockito.times(3)).logDatentransfer(datentransferCaptor.capture());

@@ -23,6 +23,7 @@
 package de.muenchen.mobidam.mdl;
 
 import de.muenchen.mobidam.Constants;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.eai.common.CommonConstants;
 import de.muenchen.mobidam.exception.MobidamSecurityException;
 import de.muenchen.mobidam.s3.S3ObjectPathBuilder;
@@ -39,8 +40,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MdlEaiRouteBuilder extends RouteBuilder {
-
-    public static final String MOBIDAM_S3_ROUTE = "direct:mdl-info";
 
     public static final String MOBIDAM_ROUTE_ID = "Interface-Mdl-Info";
     public static final String MOBIDAM_ENDPOINT_S3_ID = "Endpoint-S3";
@@ -60,7 +59,7 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
         onException(MobidamSecurityException.class)
                 .handled(true)
                 .process(exchange -> {
-                    var mdlInterface = exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class);
+                    var mdlInterface = exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class);
                     exchange.getIn().setHeader(AWS2S3Constants.KEY, S3ObjectPathBuilder.buildQuarantinePath(mdlInterface));
                 })
                 .toD("aws2-s3://${header.bucketName}?accessKey=RAW(${header.accessKey})&secretKey=RAW(${header.secretKey})&region=${properties:camel.component.aws2-s3.region}&overrideEndpoint=true&uriEndpointOverride=${properties:camel.component.aws2-s3.override-endpoint}")
@@ -72,7 +71,7 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .handled(true)
                 .to("direct:handleError");
 
-        from(MOBIDAM_S3_ROUTE)
+        from("{{de.muenchen.mobidam.integration.job-execute-route}}")
                 .routeId(MOBIDAM_ROUTE_ID)
                 .bean("sstManagementIntegrationServiceFacade", "isActivated").id("sstManagementIntegrationServiceFacade.isActivated")
                 .choice().when(simple("${body} == 'TRUE'")).id("choice.isActivated")
@@ -80,13 +79,13 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .bean("sstManagementIntegrationServiceFacade", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.start")
                 .setBody(simple("${null}"))
                 .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-                .toD(String.format("${header.%s.mdlUrl}", Constants.INTERFACE_TYPE))
-                .setHeader(CommonConstants.HEADER_BUCKET_NAME, simple(String.format("${header.%s.s3Bucket}", Constants.INTERFACE_TYPE)))
+                .toD(String.format("${header.%s.url}", CommonConstants.INTERFACE_TYPE))
+                .setHeader(CommonConstants.HEADER_BUCKET_NAME, simple(String.format("${header.%s.s3Bucket}", CommonConstants.INTERFACE_TYPE)))
                 .process("s3CredentialProvider").id("s3CredentialProvider")
                 .process("resourceTypeProcessor").id("resourceTypeProcessor")
-                .toD(String.format("micrometer:timer:mobidam_sst_${header.%s.identifier}_codedetection_seconds?action=start", Constants.INTERFACE_TYPE))
+                .toD(String.format("micrometer:timer:mobidam_sst_${header.%s.identifier}_codedetection_seconds?action=start", CommonConstants.INTERFACE_TYPE))
                 .process("codeDetectionProcessor").id("codeDetectionProcessor")
-                .toD(String.format("micrometer:timer:mobidam_sst_${header.%s.identifier}_codedetection_seconds?action=stop", Constants.INTERFACE_TYPE))
+                .toD(String.format("micrometer:timer:mobidam_sst_${header.%s.identifier}_codedetection_seconds?action=stop", CommonConstants.INTERFACE_TYPE))
                 .process("s3ObjectKeyProvider").id("s3ObjectKeyProvider")
                 .process("fileSizeProcessor").id("fileSizeProcessor")
                 .toD("aws2-s3://${header.bucketName}?accessKey=RAW(${header.accessKey})&secretKey=RAW(${header.secretKey})&region=${properties:camel.component.aws2-s3.region}&overrideEndpoint=true&uriEndpointOverride=${properties:camel.component.aws2-s3.override-endpoint}")
@@ -96,7 +95,7 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .bean("interfaceMessageFactory", "mdlMessageEnd")
                 .bean("sstManagementIntegrationService", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.end")
                 .otherwise()
-                .log(LoggingLevel.DEBUG, Constants.MOBIDAM_LOGGER, String.format("${header.%s.mobidamSstId} is not active.", Constants.INTERFACE_TYPE))
+                .log(LoggingLevel.DEBUG, Constants.MOBIDAM_LOGGER, String.format("${header.%s.mobidamSstId} is not active.", CommonConstants.INTERFACE_TYPE))
                 .end();
 
         from("direct:handleError")

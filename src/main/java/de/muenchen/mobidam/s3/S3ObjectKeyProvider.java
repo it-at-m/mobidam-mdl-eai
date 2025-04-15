@@ -23,7 +23,8 @@
 package de.muenchen.mobidam.s3;
 
 import de.muenchen.mobidam.Constants;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
+import de.muenchen.mobidam.config.InterfaceDTO;
+import de.muenchen.mobidam.eai.common.CommonConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.aws2.s3.AWS2S3Constants;
@@ -34,7 +35,7 @@ public class S3ObjectKeyProvider implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        final String objectPath = S3ObjectPathBuilder.buildFilingPath(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class));
+        final String objectPath = S3ObjectPathBuilder.buildFilingPath(exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class));
         exchange.getIn().setHeader(AWS2S3Constants.KEY, objectPath);
     }
 }
