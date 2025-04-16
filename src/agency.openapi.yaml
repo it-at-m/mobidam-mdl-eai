@@ -1,0 +1,2809 @@
+openapi: 3.1.0
+x-stoplight:
+  id: f3thjnkfyv60k
+info:
+  title: Agency
+  version: '2.0'
+  summary: The Agency API endpoints are intended to be implemented by regulatory agencies and consumed by mobility providers.
+  contact:
+    url: 'https://github.com/openmobilityfoundation/mobility-data-specification'
+    name: Open Mobility Foundation
+    email: info@openmobilityfoundation.org
+  license:
+    name: Creative Commons Attribution 4.0 International Public License
+    url: 'https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/LICENSE'
+  description: |-
+    The Agency API endpoints are intended to be implemented by regulatory agencies and consumed by mobility providers.
+
+    Data is **pushed** to agencies by providers. Providers query the Agency API when events (such as a trip start or vehicle
+    status change) occur in their systems.
+
+    This specification contains a collection of RESTful APIs used to specify the digital relationship between _mobility as a service_
+    providers and the agencies that regulate them.
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |-
+        All MDS Agency endpoints require authentication.
+
+        JSON Web Token ([JWT](https://jwt.io/introduction/)) is RECOMMENDED as the token format.
+
+        When making requests, the endpoints expect `provider_id` to be part of the claims the JWT. The token issuance,
+        expiration and revocation policies are at the discretion of the agency.
+  schemas:
+    Currency-cost:
+      title: data-types/currency-cost
+      description: 'Represents an optional cost defined in a [`currency`](./currency.yaml).'
+      x-stoplight:
+        id: 1l6vqu5tyd5at
+      type:
+        - integer
+        - 'null'
+      minimum: 0
+      examples:
+        - 500
+        - 520
+        - 1000
+    Currency:
+      title: data-types/currency
+      default: USD
+      description: 'An [ISO 4217 Alphabetic Currency Code](https://en.wikipedia.org/wiki/ISO_4217#Active_codes) representing currency of the payee. If null, USD cents is implied.'
+      examples:
+        - USD
+        - EUR
+        - GBP
+      pattern: '^[A-Z]{3}$'
+      type:
+        - string
+        - 'null'
+      x-stoplight:
+        id: 85j2txhx6x32o
+    Event-type-array:
+      description: Vehicle event types for state change.
+      title: data-types/event-type-array
+      items:
+        $ref: '#/components/schemas/Event-type'
+      minItems: 1
+      type: array
+      uniqueItems: true
+      x-stoplight:
+        id: 1dq8fejw6intb
+    Event-type:
+      title: data-types/event-type
+      description: Events are possible transitions between vehicle states.
+      enum:
+        - agency_drop_off
+        - agency_pick_up
+        - battery_charged
+        - battery_low
+        - changed_geographies
+        - charging_end
+        - charging_start
+        - comms_lost
+        - comms_restored
+        - compliance_pick_up
+        - customer_cancellation
+        - decommissioned
+        - driver_cancellation
+        - fueling_end
+        - fueling_start
+        - located
+        - maintenance
+        - maintenance_end
+        - maintenance_pick_up
+        - not_located
+        - off_hours
+        - on_hours
+        - order_drop_off
+        - order_pick_up
+        - passenger_cancellation
+        - provider_cancellation
+        - provider_drop_off
+        - rebalance_pick_up
+        - recommission
+        - remote_end
+        - remote_start
+        - reservation_cancel
+        - reservation_start
+        - reservation_stop
+        - service_end
+        - service_start
+        - system_resume
+        - system_suspend
+        - trip_cancel
+        - trip_end
+        - trip_enter_jurisdiction
+        - trip_leave_jurisdiction
+        - trip_pause
+        - trip_resume
+        - trip_start
+        - trip_stop
+        - unspecified
+      type: string
+      x-stoplight:
+        id: lsm5td7gknbxz
+    Gps:
+      description: Telemetry position data.
+      title: data-types/gps
+      properties:
+        altitude:
+          description: Altitude above mean sea level in meters.
+          type: number
+        heading:
+          description: Degrees - clockwise starting at 0 degrees at true North.
+          type: number
+        horizontal_accuracy:
+          description: Horizontal accuracy in meters.
+          type: number
+        lat:
+          description: Latitude coordinate.
+          maximum: 90
+          minimum: -90
+          type: number
+        lng:
+          description: Longitude coordinate.
+          maximum: 180
+          minimum: -180
+          type: number
+        satellites:
+          $ref: '#/components/schemas/Integer-positive'
+          description: Number of GPS or GNSS satellites.
+        speed:
+          description: Estimated speed in meters / sec as reported by the GPS chipset.
+          type: number
+        vertical_accuracy:
+          description: Vertical accuracy in meters.
+          type: number
+      required:
+        - lat
+        - lng
+      type: object
+      x-stoplight:
+        id: 8aooo5ag7x7vh
+    Integer-positive:
+      title: data-types/integer-positive
+      description: An integer greater than or equal to 0.
+      minimum: 0
+      type: integer
+      x-stoplight:
+        id: nfkphjmpm8yay
+    Iso-date:
+      description: The date of the last inspection of the vehicle in ISO 8601 `YYYY-MM-DD`.
+      title: data-types/iso-date
+      examples:
+        - '2023-12-31'
+        - '2024-01-01'
+      pattern: '(19[789]\d|[2-9]\d{3})-(0[1-9]|1[02])-([12]\d|0[1-9]|3[01])'
+      type: string
+      x-stoplight:
+        id: hx3fr01xgzhii
+    Minimum-year:
+      title: data-types/minimum-year
+      description: Represents a minimum for fields that capture a year as an integer. Derived from Unix timestamp 0.
+      minimum: 1970
+      type: integer
+      x-stoplight:
+        id: fa7v7itv8mti4
+    Propulsion-type-array:
+      description: The type of propulsion; allows multiple values.
+      minItems: 1
+      title: data-types/propulsion-type-array
+      items:
+        $ref: '#/components/schemas/Propulsion-type'
+      type: array
+      uniqueItems: true
+      x-stoplight:
+        id: 4ao4xw23z8wrf
+    Propulsion-type:
+      title: data-types/propulsion-type
+      description: 'The allowed types of propulsion in MDS. Based off of `propulsion_type` in [GBFS vehicle_types](https://github.com/MobilityData/gbfs/blob/master/gbfs.md#vehicle_typesjson)'
+      enum:
+        - human
+        - electric_assist
+        - electric
+        - combustion
+        - combustion_diesel
+        - hybrid
+        - hydrogen_fuel_cell
+        - plug_in_hybrid
+      type: string
+      x-stoplight:
+        id: 1ucdttnwhf2bo
+    String:
+      title: data-types/string
+      description: A length-limited string type.
+      examples:
+        - ABC123
+      maxLength: 255
+      pattern: ^(.*)$
+      type: string
+      x-stoplight:
+        id: 2vqv7166161kh
+    Timestamp:
+      description: Date/Time of the the stop was last updated.
+      title: data-types/timestamp
+      examples:
+        - 1514764800000
+        - 1681855703000
+      minimum: 1514764800000
+      multipleOf: 1
+      type: number
+      x-stoplight:
+        id: vliol1hqlxw6y
+    Uuid-array:
+      description: 'List of `device_id` for [vehicles](./vehicle.yaml) currently at this stop.'
+      title: data-types/uuid-array
+      type: array
+      x-stoplight:
+        id: v932clitbqv31
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/Uuid'
+    Uuid:
+      title: data-types/uuid
+      description: A UUID used to uniquely identity an object.
+      type: string
+      x-stoplight:
+        id: np9kodwmy2kqa
+      format: uuid
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      examples:
+        - 3c9604d6-b5ee-11e8-96f8-529269fb1459
+    Vehicle-state:
+      description: The state of the vehicle as of this event.
+      title: data-types/vehicle-state
+      type: string
+      x-stoplight:
+        id: 3j1h7u4vvc7kr
+      enum:
+        - removed
+        - available
+        - non_operational
+        - reserved
+        - on_trip
+        - stopped
+        - non_contactable
+        - missing
+        - elsewhere
+    Vehicle-type-counts:
+      description: 'How many places are disabled and unable to accept vehicles per [`vehicle_type`](./data-types/vehicle-type.yaml) at this stop?'
+      title: data-types/vehicle-type-counts
+      type: object
+      x-stoplight:
+        id: isobk3kg3rr8r
+      additionalProperties: false
+      propertyNames:
+        $ref: '#/components/schemas/Vehicle-type'
+      patternProperties:
+        '':
+          $ref: '#/components/schemas/Integer-positive'
+    Vehicle-type:
+      title: data-types/vehicle-type
+      description: 'The allowed types of of vehicles in MDS. Based off of `form_factor` in [GBFS vehicle_types](https://github.com/MobilityData/gbfs/blob/master/gbfs.md#vehicle_typesjson), with some additional to support MDS modes.'
+      type: string
+      x-stoplight:
+        id: gbhhyditnvs5w
+      enum:
+        - bicycle
+        - bus
+        - cargo_bicycle
+        - car
+        - delivery_robot
+        - moped
+        - motorcycle
+        - scooter_standing
+        - scooter_seated
+        - truck
+        - other
+    Version_2:
+      title: data-type/version
+      description: The version of MDS this data represents.
+      type: string
+      x-stoplight:
+        id: bt49ntcbcuxbh
+      pattern: '^2\.(\d|[1-9]\d+)\.(\d|[1-9]\d+)$'
+      examples:
+        - 2.0.0
+    Event:
+      title: models/event
+      description: 'Events represent changes in [Vehicle Status](./vehicle-status.yaml).'
+      type: object
+      x-stoplight:
+        id: 34niv0zuhmwmg
+      required:
+        - device_id
+        - provider_id
+        - event_id
+        - vehicle_state
+        - event_types
+        - timestamp
+      allOf:
+        - properties:
+            device_id:
+              $ref: '#/components/schemas/Uuid'
+              description: A unique device ID in UUID format.
+            provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'A UUID for the Provider, unique within MDS. See MDS [provider list](https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/providers.csv).'
+            data_provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'If different than `provider_id`, a UUID for the data solution provider managing the data feed in this endpoint.'
+            event_id:
+              $ref: '#/components/schemas/Uuid'
+              description: A unique event ID in UUID format.
+            vehicle_state:
+              $ref: '#/components/schemas/Vehicle-state'
+              description: The state of the vehicle as of this event.
+            event_types:
+              $ref: '#/components/schemas/Event-type-array'
+              description: Vehicle event types for state change.
+            timestamp:
+              $ref: '#/components/schemas/Timestamp'
+              description: Date/time that event occurred.
+            publication_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: Date/time event became available through the status changes endpoint.
+            location:
+              $ref: '#/components/schemas/Gps'
+              description: Location of the event.
+            event_geographies:
+              $ref: '#/components/schemas/Uuid-array'
+              description: Array of Geography UUIDs consisting of every Geography that contains the location of the status change. See Geography Driven Events. Required if location is not present.
+            battery_percent:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'Percent battery charge of vehicle, expressed between 0 and 100.'
+              maximum: 100
+            fuel_percent:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'Percent fuel in vehicle, expressed between 0 and 100.'
+              maximum: 100
+            trip_ids:
+              $ref: '#/components/schemas/Uuid-array'
+              description: 'Trip UUIDs (foreign key to /trips endpoint), conditionally required for different modes.'
+            associated_ticket:
+              $ref: '#/components/schemas/String'
+              description: Identifier for an associated ticket inside an Agency-maintained 311 or CRM system.
+        - oneOf:
+            - title: modes/car-share
+              $ref: '#/components/schemas/Event_2'
+            - title: modes/delivery-robots
+              $ref: '#/components/schemas/Event_3'
+            - title: modes/micromobility
+              $ref: '#/components/schemas/Event_4'
+            - title: modes/passenger-services
+              $ref: '#/components/schemas/Event_5'
+        - anyOf:
+            - title: Location-based event
+              required:
+                - location
+            - title: Geography-driven event
+              required:
+                - event_geographies
+              properties:
+                event_geographies:
+                  minItems: 1
+    Accessibility-attributes:
+      description: The accessibility options utilized for a given trip. Required if available.
+      title: modes/car-share/accessibility-attributes
+      type: array
+      x-stoplight:
+        id: e9mpudr8layzh
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+          - wheelchair_accessible
+    Event_2:
+      title: modes/car-share
+      description: Event definition for the `car-share` mode.
+      type: object
+      x-stoplight:
+        id: 0jy8uoz32ksy8
+      oneOf:
+        - title: vehicle_state - removed
+          properties:
+            vehicle_state:
+              const: removed
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - decommissioned
+                  - maintenance
+                  - maintenance_pick_up
+        - title: vehicle_state - available
+          properties:
+            vehicle_state:
+              const: available
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - driver_cancellation
+                  - customer_cancellation
+                  - provider_cancellation
+                  - service_start
+                  - trip_end
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - non_operational
+          properties:
+            vehicle_state:
+              const: non_operational
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - maintenance_end
+                  - recommissioned
+                  - service_end
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - reserved
+          properties:
+            vehicle_state:
+              const: reserved
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - reservation_start
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - on_trip
+          properties:
+            vehicle_state:
+              const: on_trip
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - trip_enter_jurisdiction
+                  - trip_resume
+                  - trip_start
+        - title: vehicle_state - non_contactable
+          properties:
+            vehicle_state:
+              const: non_contactable
+            event_types:
+              items:
+                enum:
+                  - comms_lost
+        - title: vehicle_state - stopped
+          properties:
+            vehicle_state:
+              const: stopped
+            event_types:
+              items:
+                enum:
+                  - charging_end
+                  - charging_start
+                  - comms_restored
+                  - fueling_end
+                  - fueling_start
+                  - remote_end
+                  - remote_start
+                  - reservation_stop
+                  - trip_stop
+        - title: vehicle_state - elsewhere
+          properties:
+            vehicle_state:
+              const: elsewhere
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - trip_leave_jurisdiction
+      if:
+        properties:
+          event_types:
+            contains:
+              - customer_cancellation
+              - driver_cancellation
+              - provider_cancellation
+              - reservation_start
+              - reservation_stop
+              - trip_end
+              - trip_enter_jurisdiction
+              - trip_leave_jurisdiction
+              - trip_resume
+              - trip_start
+              - trip_stop
+      then:
+        properties:
+          trip_ids:
+            minItems: 1
+    Trip_2:
+      title: modes/care-share/trip
+      description: Trip definition for the `car-share` mode.
+      type: object
+      x-stoplight:
+        id: lhj9vmnhh6uk8
+      required:
+        - trip_type
+      properties:
+        journey_id:
+          $ref: '#/components/schemas/Uuid'
+          description: |-
+            A unique journey ID for associating collections of trips. The journey_id field shall have a consistent value in
+            overlapping trips for a single reservation period, e.g. trips taken by a customer between ignition states over the
+            duration of their reservation. A reservation is the duration the customer has continuous exclusive access to the vehicle
+            whether parked or in motion. Journeys may be point-to-point or multi-segment.
+        journey_attributes:
+          type: object
+          additionalProperties: false
+          properties:
+            reservation_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'A unique identifier for an entire car share reservation, tied across multiple journeys and therefore trips.'
+        trip_type:
+          minItems: 1
+          maxItems: 1
+          items:
+            enum:
+              - private
+              - reservation
+              - empty
+        trip_attributes:
+          required:
+            - reservation_type
+            - passenger_count
+            - requested_time
+            - quoted_trip_start_time
+          properties:
+            reservation_type:
+              enum:
+                - phone_dispatch
+                - phone
+                - text
+                - app
+            app_name:
+              $ref: '#/components/schemas/String'
+              description: Name of the app used to reserve the trip which could be provider's app or 3rd party app.
+            permit_license_number:
+              $ref: '#/components/schemas/String'
+              description: The permit license number of the organization that dispatched the vehicle.
+            driver_id:
+              $ref: '#/components/schemas/String'
+              description: 'Universal identifier of a specific driver, static across operators, like a driver''s license number, for company employees in `reservation` or `empty` trip types, not `private` trips. Could also be used as a lookup in an agency''s internal driver system.'
+        fare_attributes:
+          required:
+            - payment_type
+            - fare_type
+          properties:
+            payment_type:
+              type: string
+              enum:
+                - account_number
+                - cash
+                - credit_card
+                - mobile_app
+                - no_payment
+                - phone
+                - voucher
+                - test
+            fare_type:
+              description: Indicator of which rate was charged.
+              type: string
+              enum:
+                - meter_fare
+                - upfront_pricing
+                - flat_rate
+            tolls:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'Sum of any and all tolls charged for the trip, such as bridge tolls.'
+            base_rate:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Minimum fare to be charged as soon as the trip starts.
+            exit_fee:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'Fee to exit location, like an airport.'
+            other_fees:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'Amount of any fees charged to the customer. Includes baggage fees, cleaning fee. Excludes other fees returned.'
+            tip:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Amount of tip paid by customer.
+            extra_amount:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Miscellaneous extra amounts charged to customer not covered by other fields.
+            taxes:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Amount of taxes paid for the ride.
+            surcharge:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Any surcharge pricing.
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes'
+          description: The accessibility options utilized for a given trip. Required if available.
+    Vehicle_2:
+      title: modes/car-share/vehicle
+      description: Vehicle definition for the `car-share` mode.
+      type: object
+      x-stoplight:
+        id: ept949jym2d7l
+      properties:
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes'
+          description: The accessibility options available on a given vehicle. Required if available.
+        vehicle_attributes:
+          type: object
+          description: 'Many of these attributes come from fields in [GBFS vehicle_types](https://github.com/MobilityData/gbfs/blob/v2.3/gbfs.md#vehicle_typesjson).'
+          additionalProperties: false
+          required:
+            - year
+            - make
+            - model
+            - color
+            - vin
+            - license_plate
+          properties:
+            year:
+              $ref: '#/components/schemas/Minimum-year'
+            make:
+              $ref: '#/components/schemas/String'
+            model:
+              $ref: '#/components/schemas/String'
+            color:
+              $ref: '#/components/schemas/String'
+            vin:
+              $ref: '#/components/schemas/String'
+              description: The vehicle's Vehicle Identification Number.
+            placard_number:
+              $ref: '#/components/schemas/String'
+              description: The registered placard number of the vehicle.
+            license_plate:
+              $ref: '#/components/schemas/String'
+              description: The registered vehicle license/number/registration plate identifier on the vehicle.
+            inspection_date:
+              $ref: '#/components/schemas/Iso-date'
+              description: The date of the last inspection of the vehicle in ISO 8601 `YYYY-MM-DD`.
+            snow_shovel:
+              type: boolean
+              description: Vehicle has a shovel for removing snow or ice from around vehicle or vehicle path.
+            snow_brush:
+              type: boolean
+              description: Vehicle has brushes for removing snow or ice from vehicle.
+            bike_rack:
+              type: boolean
+              description: Vehicle has car roof or trunk mounted bike rack.
+            park_access:
+              type: boolean
+              description: Vehicle has an access pass to a national/regional/municipal park system.
+            toll_transponder:
+              type: boolean
+              description: Vehicle has a toll transponder for national/regional toll system.
+            phone_charger:
+              type: boolean
+              description: Vehicle has a place to charge a cellphone.
+            sunshade:
+              type: boolean
+              description: Vehicle has a sunshade available (i.e. for windshield).
+            cargo_volume_capacity:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'Cargo volume available in the vehicle, expressed in liters. For cars, it corresponds to the space between the boot floor, including the storage under the hatch, to the rear shelf in the trunk.'
+            cargo_load_capacity:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'The capacity of the vehicle cargo space (excluding passengers), expressed in kilograms.'
+            door_count:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The number of doors this vehicle type has.
+            wheel_count:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The number of doors this vehicle type has.
+            air_conditioning:
+              type: boolean
+              description: Vehicle has air conditioning.
+            gear_switch:
+              type: string
+              enum:
+                - automatic
+                - manual
+            convertible:
+              type: boolean
+              description: Vehicle has a retractable roof.
+            cruise_control:
+              type: boolean
+              description: Vehicle has a cruise control system.
+            navigation:
+              type: boolean
+              description: Vehicle has a built-in navigation system.
+    Accessibility-attributes_2:
+      description: The accessibility options available on a given delivery robot device. Required if available.
+      title: modes/delivery-robots/accessibility-attributes
+      type: object
+      x-stoplight:
+        id: zsnl5o3q9d0a0
+      additionalProperties: false
+      properties:
+        audio_cue:
+          type: boolean
+          description: Is the device equipped with audio cues upon delivery.
+        visual_cue:
+          type: boolean
+          description: Is the device equipped with visual cues upon delivery.
+        remote_open:
+          type: boolean
+          description: Can the device door be remotely opened to retrieve cargo upon delivery.
+    Event_3:
+      title: modes/delivery-robots
+      description: Event definition for the `delivery-robots` mode.
+      type: object
+      x-stoplight:
+        id: sksecq6lesbxa
+      oneOf:
+        - title: vehicle_state - removed
+          properties:
+            vehicle_state:
+              const: removed
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - decommissioned
+                  - located
+                  - maintenance_pick_up
+        - title: vehicle_state - available
+          properties:
+            vehicle_state:
+              const: available
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - customer_cancellation
+                  - driver_cancellation
+                  - located
+                  - provider_cancellation
+                  - service_start
+                  - trip_end
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - non_operational
+          properties:
+            vehicle_state:
+              const: non_operational
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - located
+                  - maintenance
+                  - maintenance_end
+                  - recommissioned
+                  - service_end
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - reserved
+          properties:
+            vehicle_state:
+              const: reserved
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - located
+                  - reservation_start
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - on_trip
+          properties:
+            vehicle_state:
+              const: on_trip
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - located
+                  - trip_enter_jurisdiction
+                  - trip_resume
+                  - trip_start
+        - title: vehicle_state - stopped
+          properties:
+            vehicle_state:
+              const: stopped
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - located
+                  - order_drop_off
+                  - order_pick_up
+                  - reservation_stop
+                  - trip_pause
+        - title: vehicle_state - non_contactable
+          properties:
+            vehicle_state:
+              const: non_contactable
+            event_types:
+              items:
+                enum:
+                  - comms_lost
+        - title: vehicle_state - missing
+          properties:
+            vehicle_state:
+              const: missing
+            event_types:
+              items:
+                enum:
+                  - not_located
+        - title: vehicle_state - elsewhere
+          properties:
+            vehicle_state:
+              const: elsewhere
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - located
+                  - trip_leave_jurisdiction
+      if:
+        properties:
+          event_types:
+            contains:
+              - customer_cancellation
+              - driver_cancellation
+              - provider_cancellation
+              - reservation_start
+              - reservation_stop
+              - trip_end
+              - trip_enter_jurisdiction
+              - trip_leave_jurisdiction
+              - trip_pause
+              - trip_resume
+              - trip_start
+      then:
+        properties:
+          trip_ids:
+            minItems: 1
+    Trip_3:
+      title: modes/delivery-robots/trip
+      description: Trip definition for the `delivery-robots` mode.
+      type: object
+      x-stoplight:
+        id: 0gzaszwxukf5a
+      required:
+        - trip_type
+      properties:
+        journey_id:
+          $ref: '#/components/schemas/Uuid'
+          description: |-
+            The `journey_id` field shall have a consistent value in overlapping trips. Journeys may be point-to-point, multi-segment,
+            or multi-segment overlapping.
+        trip_type:
+          minItems: 1
+          maxItems: 1
+          items:
+            enum:
+              - delivery
+              - return
+              - advertising
+              - mapping
+              - roaming
+        trip_attributes:
+          required:
+            - driver_type
+          properties:
+            driver_type:
+              enum:
+                - human
+                - semi_autonomous
+                - autonomous
+            driver_id:
+              $ref: '#/components/schemas/Uuid'
+              description: Consistent unique identifier of the primary driver. Could be based on software version or an internal human driver id.
+            app_name:
+              $ref: '#/components/schemas/String'
+              description: Name of the app used to reserve the trip which could be provider's app or 3rd party app.
+            requested_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: When the customer requested the trip.
+            has_payload:
+              type: boolean
+              description: is there any payload for any delivery included in the device at trip start.
+        fare_attributes:
+          properties:
+            payment_type:
+              type: string
+              enum:
+                - account_number
+                - cash
+                - credit_card
+                - mobile_app
+                - no_payment
+                - phone
+                - test
+                - voucher
+            price:
+              $ref: '#/components/schemas/Currency-cost'
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes_2'
+          description: The accessibility options available on a given delivery robot device. Required if available.
+    Vehicle_3:
+      title: modes/delivery-robots/vehicle
+      description: Vehicle definition for the `delivery-robots` mode.
+      type: object
+      x-stoplight:
+        id: 01xpq0lxoywf6
+      properties:
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes_2'
+          description: The accessibility options available on a given delivery robot device. Required if available.
+        vehicle_attributes:
+          type: object
+          additionalProperties: false
+          properties:
+            year:
+              $ref: '#/components/schemas/Minimum-year'
+            make:
+              $ref: '#/components/schemas/String'
+            model:
+              $ref: '#/components/schemas/String'
+            color:
+              $ref: '#/components/schemas/String'
+            inspection_date:
+              $ref: '#/components/schemas/Iso-date'
+              description: The date of the last inspection of the vehicle in ISO 8601 `YYYY-MM-DD`.
+            equipped_cameras:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The number of cameras equipped on device.
+            equipped_lighting:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The  number of lights used to illuminate the environment on the the device.
+            wheel_count:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The number of wheels on the device.
+            width:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The width in meters of the device.
+            length:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The length in meters of the device.
+            height:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The height in meters of the device (minus flexible elements like flags).
+            weight:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The weight in kilograms rounded up of the device not including cargo.
+            top_speed:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The theoretical top speed in meters per second of the device.
+            storage_capacity:
+              $ref: '#/components/schemas/Integer-positive'
+              description: The volume in cubic centimeters of cargo space available not including any cargo.
+    Accessibility-attributes_3:
+      description: The accessibility options utilized for a given trip. Required if available.
+      title: modes/micromobility/accessibility-attributes
+      type: array
+      x-stoplight:
+        id: 15do56zc6v30i
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+          - adaptive
+    Event_4:
+      title: modes/micromobility
+      description: Event definition for the `micromobility` mode.
+      type: object
+      x-stoplight:
+        id: ii72nhqky41mp
+      oneOf:
+        - title: vehicle_state - removed
+          properties:
+            vehicle_state:
+              const: removed
+            event_types:
+              items:
+                enum:
+                  - agency_pick_up
+                  - comms_restored
+                  - compliance_pick_up
+                  - decommissioned
+                  - located
+                  - maintenance_pick_up
+                  - rebalance_pick_up
+                  - unspecified
+        - title: vehicle_state - available
+          properties:
+            vehicle_state:
+              const: available
+            event_types:
+              items:
+                enum:
+                  - agency_drop_off
+                  - battery_charged
+                  - comms_restored
+                  - located
+                  - maintenance
+                  - on_hours
+                  - provider_drop_off
+                  - reservation_cancel
+                  - system_resume
+                  - trip_cancel
+                  - trip_end
+                  - unspecified
+        - title: vehicle_state - non_operational
+          properties:
+            vehicle_state:
+              const: non_operational
+            event_types:
+              items:
+                enum:
+                  - battery_low
+                  - comms_restored
+                  - located
+                  - maintenance
+                  - off_hours
+                  - system_suspend
+                  - unspecified
+        - title: vehicle_state - reserved
+          properties:
+            vehicle_state:
+              const: reserved
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - located
+                  - reservation_start
+                  - unspecified
+        - title: vehicle_state - on_trip
+          properties:
+            vehicle_state:
+              const: on_trip
+            event_types:
+              items:
+                enum:
+                  - changed_geographies
+                  - comms_restored
+                  - located
+                  - trip_enter_jurisdiction
+                  - trip_start
+                  - unspecified
+        - title: vehicle_state - non_contactable
+          properties:
+            vehicle_state:
+              const: non_contactable
+            event_types:
+              items:
+                enum:
+                  - comms_lost
+                  - unspecified
+        - title: vehicle_state - missing
+          properties:
+            vehicle_state:
+              const: missing
+            event_types:
+              items:
+                enum:
+                  - not_located
+                  - unspecified
+        - title: vehicle_state - elsewhere
+          properties:
+            vehicle_state:
+              const: elsewhere
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - located
+                  - trip_leave_jurisdiction
+                  - unspecified
+      if:
+        properties:
+          event_types:
+            contains:
+              - trip_cancel
+              - trip_end
+              - trip_enter_jurisdiction
+              - trip_leave_jurisdiction
+              - trip_start
+      then:
+        properties:
+          trip_ids:
+            minItems: 1
+    Trip_4:
+      title: modes/micromobility/trip
+      description: Trip definition for the `micromobility` mode.
+      type: object
+      x-stoplight:
+        id: mtd16mz6d70ve
+      properties:
+        trip_type:
+          maxItems: 1
+          items:
+            enum:
+              - rider
+              - rebalance
+              - maintenance
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes_3'
+          description: The accessibility options utilized for a given trip. Required if available.
+    Vehicle_4:
+      title: modes/micromobility/vehicle
+      description: Vehicle definition for the `micromobility` mode.
+      type: object
+      x-stoplight:
+        id: f0dry8u608trk
+      properties:
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes_3'
+          description: The accessibility options available on a given vehicle. Required if available.
+        vehicle_attributes:
+          type: object
+          additionalProperties: false
+          properties:
+            year:
+              $ref: '#/components/schemas/Minimum-year'
+            make:
+              $ref: '#/components/schemas/String'
+            model:
+              $ref: '#/components/schemas/String'
+    Accessibility-attributes_4:
+      description: The accessibility options utilized for a given trip. Required if available.
+      title: modes/passenger-services/accessibility-attributes
+      type: array
+      x-stoplight:
+        id: 62ab40s0bfzrw
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+          - wheelchair_accessible
+    Event_5:
+      title: modes/passenger-services
+      description: Event definition for the `passenger-services` mode.
+      type: object
+      x-stoplight:
+        id: diqnymt2vyq3m
+      oneOf:
+        - title: vehicle_state - removed
+          properties:
+            vehicle_state:
+              const: removed
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - decommissioned
+                  - maintenance_pick_up
+        - title: vehicle_state - available
+          properties:
+            vehicle_state:
+              const: available
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - driver_cancellation
+                  - passenger_cancellation
+                  - provider_cancellation
+                  - service_start
+                  - trip_end
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - non_operational
+          properties:
+            vehicle_state:
+              const: non_operational
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - maintenance
+                  - maintenance_end
+                  - recommissioned
+                  - service_end
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - reserved
+          properties:
+            vehicle_state:
+              const: reserved
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - reservation_start
+                  - trip_enter_jurisdiction
+        - title: vehicle_state - on_trip
+          properties:
+            vehicle_state:
+              const: on_trip
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - trip_enter_jurisdiction
+                  - trip_resume
+                  - trip_start
+        - title: vehicle_state - non_contactable
+          properties:
+            vehicle_state:
+              const: non_contactable
+            event_types:
+              items:
+                enum:
+                  - comms_lost
+        - title: vehicle_state - stopped
+          properties:
+            vehicle_state:
+              const: stopped
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - reservation_stop
+                  - trip_stop
+        - title: vehicle_state - elsewhere
+          properties:
+            vehicle_state:
+              const: elsewhere
+            event_types:
+              items:
+                enum:
+                  - comms_restored
+                  - trip_leave_jurisdiction
+      if:
+        properties:
+          event_types:
+            contains:
+              - driver_cancellation
+              - passenger_cancellation
+              - provider_cancellation
+              - reservation_start
+              - reservation_stop
+              - trip_end
+              - trip_enter_jurisdiction
+              - trip_leave_jurisdiction
+              - trip_resume
+              - trip_start
+              - trip_stop
+      then:
+        properties:
+          trip_ids:
+            minItems: 1
+    Trip_5:
+      title: modes/passenger-services/trip
+      description: Trip definition for the `passenger-services` mode.
+      type: object
+      x-stoplight:
+        id: 8nlne62fv8f5k
+      required:
+        - trip_type
+      properties:
+        journey_id:
+          $ref: '#/components/schemas/Uuid'
+          description: |-
+            A unique journey ID for associating collections of trips. The `journey_id` field shall have a consistent value in
+            overlapping trips, e.g. "pooled" or "shared" rides with different start and/or end locations. Journeys may be
+            point-to-point, multi-segment, or multi-segment overlapping.
+        journey_attributes:
+          type: object
+          additionalProperties: false
+          properties:
+            shift_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'A unique identifier for an entire driver''s work shift, tied across multiple journeys and therefore trips.'
+        trip_type:
+          minItems: 1
+          maxItems: 1
+          items:
+            enum:
+              - private
+              - shared
+              - reservation
+              - empty
+        trip_attributes:
+          required:
+            - hail_type
+            - passenger_count
+            - requested_time
+            - quoted_trip_start_time
+          properties:
+            hail_type:
+              enum:
+                - street_hail
+                - phone_dispatch
+                - phone
+                - text
+                - app
+            app_name:
+              $ref: '#/components/schemas/String'
+              description: Name of the app used to reserve the trip which could be provider's app or 3rd party app.
+            passenger_count:
+              $ref: '#/components/schemas/Integer-positive'
+              description: Unique count of passengers transported during trip duration.
+            requested_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: When the customer requested the trip.
+            requested_trip_start_location:
+              $ref: '#/components/schemas/Gps'
+              description: Location where the customer requested the trip to start (required if this is within jurisdictional boundaries).
+            quoted_trip_start_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: 'Time the trip was estimated or scheduled to start, that was provided to the passenger.'
+            dispatch_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: Time the vehicle was dispatched to the customer (required if trip was dispatched).
+            trip_wait_time:
+              $ref: '#/components/schemas/Integer-positive'
+              description: '(milliseconds) Part of the passenger trip where the vehicle was moving slow or stopped (e.g. <12mph), which is a different fare rate in some jurisdictions.'
+            trip_fare_time:
+              $ref: '#/components/schemas/Integer-positive'
+              description: '(milliseconds) part of the passenger trip where the vehicle was moving more quickly (e.g. >12mph), which is a different fare rate in some jurisdictions.'
+            pickup_address:
+              $ref: '#/components/schemas/String'
+              description: Street address where the trip originated from.
+            dropoff_address:
+              $ref: '#/components/schemas/String'
+              description: Street address where the trip ended.
+            permit_license_number:
+              $ref: '#/components/schemas/String'
+              description: The permit license number of the organization that dispatched the vehicle.
+            driver_id:
+              $ref: '#/components/schemas/String'
+              description: 'Universal identifier of a specific driver, static across operators, like a driver''s license number. Could also be used as a lookup in an agency''s internal driver system.'
+            wheelchair_transported:
+              type: boolean
+              description: is there any payload for any delivery included in the device at trip start.
+            cancellation_reason:
+              $ref: '#/components/schemas/String'
+              description: 'The reason why a _driver_ cancelled a reservation. (required if a driver cancelled a trip, and a `driver_cancellation` event_type was part of the trip)'
+        fare_attributes:
+          required:
+            - payment_type
+            - fare_type
+          properties:
+            payment_type:
+              type: string
+              enum:
+                - account_number
+                - cash
+                - credit_card
+                - mobile_app
+                - no_payment
+                - paratransit
+                - phone
+                - test
+                - voucher
+            fare_type:
+              description: Indicator of which rate was charged.
+              type: string
+              enum:
+                - meter_fare
+                - upfront_pricing
+                - flat_rate
+            meter_fare_amount:
+              $ref: '#/components/schemas/Currency-cost'
+              description: If `upfront_pricing` is used as a `fare_type` include what the metered fare would have been if `meter_fare` would have been used. Allows cost comparison in evaluation of programs and pilots.
+            tolls:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'Sum of any and all tolls charged for the trip, such as bridge tolls.'
+            base_rate:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Minimum fare to be charged as soon as the trip starts.
+            exit_fee:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'Fee to exit location, like an airport.'
+            other_fees:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'Amount of any fees charged to the customer. Includes baggage fees, cleaning fee. Excludes other fees returned.'
+            tip:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Amount of tip paid by customer.
+            extra_amount:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Miscellaneous extra amounts charged to customer not covered by other fields.
+            taxes:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Amount of taxes paid for the ride.
+            surcharge:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Any surcharge pricing.
+            commission:
+              $ref: '#/components/schemas/Currency-cost'
+              description: Any extra commission for the ride.
+            driver_trip_pay:
+              $ref: '#/components/schemas/Currency-cost'
+              description: The payment the driver received for the trip.
+            rate_code_id:
+              type: string
+              enum:
+                - meter_fare
+                - shared
+                - out_of_town
+                - disabled
+                - upfront_pricing
+                - promo_rate
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes_4'
+          description: The accessibility options utilized for a given trip. Required if available.
+    Vehicle_5:
+      title: modes/passenger-services/vehicle
+      description: Vehicle definition for the `passenger-services` mode.
+      type: object
+      x-stoplight:
+        id: jlsmrsrzxthi6
+      properties:
+        accessibility_attributes:
+          $ref: '#/components/schemas/Accessibility-attributes_4'
+          description: The accessibility options available on a given vehicle. Required if available.
+        vehicle_attributes:
+          type: object
+          additionalProperties: false
+          properties:
+            year:
+              $ref: '#/components/schemas/Minimum-year'
+            make:
+              $ref: '#/components/schemas/String'
+            model:
+              $ref: '#/components/schemas/String'
+            color:
+              $ref: '#/components/schemas/String'
+            vin:
+              $ref: '#/components/schemas/String'
+              description: The vehicle's Vehicle Identification Number.
+            placard_number:
+              $ref: '#/components/schemas/String'
+              description: The registered placard number of the vehicle.
+            license_plate:
+              $ref: '#/components/schemas/String'
+              description: The registered vehicle license/number/registration plate identifier on the vehicle.
+            inspection_date:
+              $ref: '#/components/schemas/Iso-date'
+              description: The date of the last inspection of the vehicle in ISO 8601 `YYYY-MM-DD`.
+    Mutable-stop:
+      title: models/mutable-stop
+      description: The fields of a Stop that can be changed in the Agency API.
+      type: object
+      x-stoplight:
+        id: xs6ehwfn5b629
+      required:
+        - stop_id
+        - last_updated
+      properties:
+        stop_id:
+          $ref: '#/components/schemas/Uuid'
+          description: UUID for the stop.
+        last_updated:
+          $ref: '#/components/schemas/Timestamp'
+          description: Date/Time of the the stop was last updated.
+        status:
+          type: object
+          required:
+            - is_installed
+            - is_renting
+            - is_returning
+          properties:
+            is_installed:
+              type: boolean
+              description: 'See GBFS [station_status.json](https://github.com/NABSA/gbfs/blob/master/gbfs.md#station_statusjson)'
+            is_renting:
+              type: boolean
+              description: 'See GBFS [station_status.json](https://github.com/NABSA/gbfs/blob/master/gbfs.md#station_statusjson)'
+            is_returning:
+              type: boolean
+              description: 'See GBFS [station_status.json](https://github.com/NABSA/gbfs/blob/master/gbfs.md#station_statusjson)'
+          description: The status of the stop.
+        num_vehicles_available:
+          $ref: '#/components/schemas/Vehicle-type-counts'
+          description: 'How many vehicles are available per [`vehicle_type`](./data-types/vehicle-type.yaml) at this stop?.'
+        num_vehicles_disabled:
+          $ref: '#/components/schemas/Vehicle-type-counts'
+          description: 'How many vehicles are unavailable/reserved per [`vehicle_type`](./data-types/vehicle-type.yaml) at this stop?.'
+        rental_methods:
+          type: array
+          uniqueItems: true
+          items:
+            enum:
+              - key
+              - creditcard
+              - paypass
+              - applepay
+              - androidpay
+              - transitcard
+              - accountnumber
+              - phone
+          description: 'List of payment methods accepted at stop, see [GBFS Rental Methods](https://github.com/NABSA/gbfs/blob/master/gbfs.md#station_informationjson).'
+        num_places_available:
+          $ref: '#/components/schemas/Vehicle-type-counts'
+          description: 'How many places are free to be populated with vehicles per [`vehicle_type`](./data-types/vehicle-type.yaml) at this stop?'
+        num_places_disabled:
+          $ref: '#/components/schemas/Vehicle-type-counts'
+          description: 'How many places are disabled and unable to accept vehicles per [`vehicle_type`](./data-types/vehicle-type.yaml) at this stop?'
+        devices:
+          $ref: '#/components/schemas/Uuid-array'
+          description: 'List of `device_id` for [vehicles](./vehicle.yaml) currently at this stop.'
+    Report:
+      title: models/report
+      type: string
+      description: |-
+        Reports are information that providers can send back to agencies containing aggregated data that is not contained within other MDS endpoints, like counts of special groups of riders. These supplemental reports are not a substitute for other MDS endpoints.
+        The authenticated reports are monthly, historic flat files that may be pre-generated by the provider.
+      x-stoplight:
+        id: wb2h7rhv8xtur
+      pattern: '^provider_id,start_date,duration,special_group_type,geography_id,vehicle_type,trip_count,rider_count'
+      examples:
+        - |-
+          provider_id,start_date,duration,special_group_type,geography_id,vehicle_type,trip_count,rider_count
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,all_riders,44428624-186b-4fc3-a7fb-124f487464a1,scooter,1302,983
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,low_income,44428624-186b-4fc3-a7fb-124f487464a1,scooter,201,104
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,all_riders,44428624-186b-4fc3-a7fb-124f487464a1,bicycle,530,200
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,low_income,44428624-186b-4fc3-a7fb-124f487464a1,bicycle,75,26
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,all_riders,03db06d0-3998-406a-92c7-25a83fc2784a,scooter,687,450
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,low_income,03db06d0-3998-406a-92c7-25a83fc2784a,scooter,98,45
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,all_riders,03db06d0-3998-406a-92c7-25a83fc2784a,bicycle,256,104
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,low_income,03db06d0-3998-406a-92c7-25a83fc2784a,bicycle,41,16
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,all_riders,8ad39dc3-005b-4348-9d61-c830c54c161b,scooter,201,140
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,low_income,8ad39dc3-005b-4348-9d61-c830c54c161b,scooter,35,21
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,all_riders,8ad39dc3-005b-4348-9d61-c830c54c161b,bicycle,103,39
+          48415839-3e38-4ba5-a557-e45fb4e6a0a3,2019-09-01,P1M,low_income,8ad39dc3-005b-4348-9d61-c830c54c161b,bicycle,15,-1
+    Bulk:
+      title: response/bulk
+      type: object
+      description: 'For multi-record POST and PUT calls, e.g. sending Events using the Agency API, the bulk-response structure describes a list of results.'
+      x-stoplight:
+        id: sdj75536ytrso
+      required:
+        - success
+        - total
+      properties:
+        success:
+          $ref: '#/components/schemas/Integer-positive'
+          description: Number of successfully written records.
+        total:
+          $ref: '#/components/schemas/Integer-positive'
+          description: Total number of provided records.
+        failures:
+          type: array
+    Error:
+      title: response/error
+      description: An error message for troubleshooting.
+      type: object
+      x-stoplight:
+        id: 90yc58ni8u0ch
+      required:
+        - error
+        - error_description
+        - error_details
+      properties:
+        error:
+          type: string
+          description: Error message string.
+        error_description:
+          type: string
+          description: Human readable error description (can be localized).
+        error_details:
+          type: array
+          description: Human readable error description (can be localized).
+          minItems: 1
+          items:
+            type: string
+    Error_already_registered:
+      title: response/error_already_registered
+      description: An item with that identifier is already registered.
+      type: object
+      x-stoplight:
+        id: 3hzf84lqgzawp
+      required:
+        - item
+        - error
+        - error_description
+      properties:
+        error:
+          const: already_registered
+        error_description:
+          type: string
+          examples:
+            - A vehicle with that device_id is already registered.
+            - A stop with that stop_id is already registered.
+        error_details:
+          type: array
+          items:
+            type: string
+    Error_bad_param:
+      title: response/error_bad_param
+      description: A validation error occurred.
+      type: object
+      x-stoplight:
+        id: vekidez6dfa4u
+      required:
+        - item
+        - error
+        - error_description
+        - error_details
+      properties:
+        error:
+          const: bad_param
+        error_description:
+          type: string
+          examples:
+            - A validation error occurred
+        error_details:
+          type: array
+          description: Array of parameters with errors.
+          minItems: 1
+          items:
+            type: string
+    Error_missing_param:
+      title: response/error_missing_param
+      description: A required parameter is missing.
+      type: object
+      x-stoplight:
+        id: huc7x2g2wfq5a
+      required:
+        - item
+        - error
+        - error_description
+        - error_details
+      properties:
+        error:
+          const: missing_param
+        error_description:
+          type: string
+          examples:
+            - A required parameter is missing.
+        error_details:
+          type: array
+          description: Array of missing parameters.
+          minItems: 1
+          items:
+            type: string
+    Error_unregistered:
+      title: response/error_unregistered
+      description: An item with that identifier is not registered.
+      type: object
+      x-stoplight:
+        id: cw4q7ycy1a17h
+      required:
+        - item
+        - error
+        - error_description
+      properties:
+        error:
+          const: unregistered
+        error_description:
+          type: string
+          examples:
+            - This device_id is not registered.
+            - This stop_id is unregistered
+        error_details:
+          type: array
+          items:
+            type: string
+    Paging:
+      title: response/paging
+      type: object
+      x-stoplight:
+        id: y6kgbr644ng4u
+      properties:
+        links:
+          description: 'If pagination is used for endpoints that support it, the pagination must comply with the [JSON API](http://jsonapi.org/format/#fetching-pagination) specification.'
+          type: object
+          required:
+            - next
+          additionalProperties: false
+          properties:
+            first:
+              type:
+                - 'null'
+                - string
+              title: The URL to the first page of data.
+              examples:
+                - 'https://data.provider.co/trips/first'
+              format: uri
+            last:
+              type:
+                - 'null'
+                - string
+              title: The URL to the last page of data.
+              examples:
+                - 'https://data.provider.co/trips/last'
+              format: uri
+            prev:
+              type:
+                - 'null'
+                - string
+              title: The URL to the previous page of data.
+              examples:
+                - 'https://data.provider.co/trips/prev'
+              format: uri
+            next:
+              type:
+                - 'null'
+                - string
+              title: The URL to the next page of data.
+              examples:
+                - 'https://data.provider.co/trips/next'
+              format: uri
+    Version:
+      title: response/version
+      description: Response bodies must be a UTF-8 encoded JSON object and must minimally include the MDS `version`.
+      type: object
+      x-stoplight:
+        id: ivd8jadc3rqf7
+      required:
+        - version
+      properties:
+        version:
+          $ref: '#/components/schemas/Version_2'
+    Stop:
+      title: models/stop
+      description: |-
+        Stops describe vehicle trip start and end locations in a pre-designated physical place. They can vary from docking stations
+        with or without charging, corrals with lock-to railings, or suggested parking areas marked with spray paint.
+        Stops are used in both [Provider](../reference/provider.yaml) and [Agency](#) telemetry data.
+      type: object
+      x-stoplight:
+        id: m0f816guajcjj
+      allOf:
+        - required:
+            - name
+            - location
+            - status
+            - capacity
+            - num_vehicles_available
+            - num_vehicles_disabled
+          properties:
+            name:
+              $ref: '#/components/schemas/String'
+              description: Name of the stop.
+            location:
+              $ref: '#/components/schemas/Gps'
+              description: Simple centerpoint location of the Stop. The use of the optional `geography_id` is recommended to provide more detail.
+            capacity:
+              $ref: '#/components/schemas/Vehicle-type-counts'
+              description: 'Number of total places per [`vehicle_type`](./data-types/vehicle-type.yaml).'
+            provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: |-
+                UUID for the Provider managing this Stop. Null/undefined if managed by an Agency.
+                See MDS [provider list](https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/providers.csv).
+            data_provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: |-
+                UUID for the data provider managing the data coming from this stop.
+                Null/undefined if managed by an agency or a provider. Null/undefined if managed by an Agency.
+                See MDS [provider list](https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/providers.csv).
+            geography_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'Pointer to the [Geography](#) that represents the Stop geospatially via Polygon or MultiPolygon.'
+            region_id:
+              $ref: '#/components/schemas/String'
+              description: 'ID of the region where station is located. See [GBFS Station Information](https://github.com/NABSA/gbfs/blob/master/gbfs.md#station_informationjson).'
+            short_name:
+              $ref: '#/components/schemas/String'
+              description: Abbreviated stop name.
+            address:
+              $ref: '#/components/schemas/String'
+              description: Postal address (useful for directions).
+            post_code:
+              $ref: '#/components/schemas/String'
+              description: Postal code.
+              examples:
+                - 10036
+            cross_street:
+              $ref: '#/components/schemas/String'
+              description: Cross street of where station is located.
+            parent_stop:
+              $ref: '#/components/schemas/Uuid'
+              description: Describe a basic hierarchy of stops (e.g. a stop inside a greater stop).
+            image_url:
+              type: string
+              format: uri
+              description: 'Link to an image, photo, or diagram of the stop. Could be used by providers to help riders find or use the stop.'
+        - $ref: '#/components/schemas/Mutable-stop'
+    Telemetry:
+      title: models/telemetry
+      description: |-
+        A standard point of vehicle telemetry. References to latitude and longitude imply coordinates encoded in the
+        [WGS 84 (EPSG:4326)](https://en.wikipedia.org/wiki/World_Geodetic_System) standard GPS or GNSS projection expressed
+        as [Decimal Degrees](https://en.wikipedia.org/wiki/Decimal_degrees).
+      type: object
+      x-stoplight:
+        id: 47oju05zyh09f
+      required:
+        - device_id
+        - provider_id
+        - telemetry_id
+        - timestamp
+        - trip_ids
+        - journey_id
+        - location
+      properties:
+        device_id:
+          $ref: '#/components/schemas/Uuid'
+          description: A unique device ID in UUID format.
+        provider_id:
+          $ref: '#/components/schemas/Uuid'
+          description: 'A UUID for the Provider, unique within MDS. See MDS [provider list](https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/providers.csv).'
+        data_provider_id:
+          $ref: '#/components/schemas/Uuid'
+          description: 'If different than `provider_id`, a UUID for the data solution provider managing the data feed in this endpoint.'
+        telemetry_id:
+          $ref: '#/components/schemas/Uuid'
+          description: ID used for uniquely-identifying a Telemetry entry.
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+          description: Date/time that event occurred.
+        trip_ids:
+          oneOf:
+            - $ref: '#/components/schemas/Uuid-array'
+              minItems: 1
+              description: 'If telemetry occurred during a trip, the ID of the trip(s).'
+            - type: 'null'
+              description: 'If not in a trip, null.'
+        journey_id:
+          oneOf:
+            - $ref: '#/components/schemas/Uuid'
+              description: 'If telemetry occurred during a trip and journeys are used for the mode, the ID of the journey.'
+            - type: 'null'
+              description: 'If not in a trip, null.'
+        stop_id:
+          $ref: '#/components/schemas/Uuid'
+          description: Stop that the vehicle is currently located at.
+        location:
+          $ref: '#/components/schemas/Gps'
+          description: Telemetry position data.
+        location_type:
+          type: string
+          enum:
+            - street
+            - sidewalk
+            - crosswalk
+            - garage
+            - bike_lane
+        battery_percent:
+          $ref: '#/components/schemas/Integer-positive'
+          description: 'Percent battery charge of vehicle, expressed between 0 and 100.'
+          maximum: 100
+        fuel_percent:
+          $ref: '#/components/schemas/Integer-positive'
+          description: 'Percent fuel in vehicle, expressed between 0 and 100.'
+          maximum: 100
+        tipped_over:
+          type: boolean
+          description: 'If detectable and known, is the device tipped over or not?'
+          default: false
+    Trip:
+      title: models/trip
+      description: A trip represents a journey taken by a _mobility as a service_ customer with a geo-tagged start and stop point.
+      type: object
+      x-stoplight:
+        id: 6s0dm1r2gk9x0
+      required:
+        - provider_id
+        - device_id
+        - trip_id
+        - start_time
+        - end_time
+        - start_location
+        - end_location
+        - duration
+        - distance
+      allOf:
+        - properties:
+            provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'A UUID for the Provider, unique within MDS. See MDS [provider list](https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/providers.csv).'
+            data_provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'If different than `provider_id`, a UUID for the data solution provider managing the data feed in this endpoint.'
+            device_id:
+              $ref: '#/components/schemas/Uuid'
+              description: A unique device ID in UUID format.
+            trip_id:
+              $ref: '#/components/schemas/Uuid'
+              description: A unique ID for each trip
+            trip_type:
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+            trip_attributes:
+              type: object
+            fare_attributes:
+              type: object
+            start_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: Start of the passenger/driver trip.
+            end_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: End of the passenger/driver trip.
+            start_location:
+              $ref: '#/components/schemas/Gps'
+              description: Location of the start of the trip.
+            end_location:
+              $ref: '#/components/schemas/Gps'
+              description: Location of the end of the trip.
+            duration:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'Trip duration, in seconds.'
+              examples:
+                - 600
+            distance:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'Trip distance, in meters.'
+              examples:
+                - 1000
+            publication_time:
+              $ref: '#/components/schemas/Timestamp'
+              description: Date/time that trip became available through the trips endpoint.
+            accessibility_attributes:
+              type:
+                - array
+                - object
+            parking_verification_url:
+              type:
+                - string
+                - 'null'
+              format: uri
+              description: 'A URL to a photo (or other evidence) of proper vehicle parking at the end of a trip, provided by customer or operator.'
+              examples:
+                - 'https://data.provider.co/parking_verify/1234.jpg'
+            parking_category:
+              type: string
+              description: |-
+                The type of parking location detected or provided and the end of a trip. Note that `other_valid` covers any other
+                allowed parking location beyond what is enumerated, and `invalid` is any improper parking based on agency parking rules.
+              enum:
+                - corral
+                - curb
+                - rack
+                - other_valid
+                - invalid
+            standard_cost:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'The cost, in the currency defined in `currency`, that it would cost to perform that trip in the standard operation of the System.'
+              examples:
+                - 500
+            actual_cost:
+              $ref: '#/components/schemas/Currency-cost'
+              description: 'The actual cost, in the currency defined in `currency`, paid by the customer of the _mobility as a service_ provider.'
+              examples:
+                - 520
+            currency:
+              $ref: '#/components/schemas/Currency'
+        - oneOf:
+            - $ref: '#/components/schemas/Trip_2'
+            - $ref: '#/components/schemas/Trip_3'
+            - $ref: '#/components/schemas/Trip_4'
+            - $ref: '#/components/schemas/Trip_5'
+    Vehicle-status:
+      title: models/vehicles-status
+      description: 'A vehicle status record represents the current or last-known event and telemetry from a [vehicle](./vehicle.yaml).'
+      type: object
+      x-stoplight:
+        id: cuu383rzjelef
+      required:
+        - device_id
+        - provider_id
+        - last_event
+        - last_telemetry
+      properties:
+        device_id:
+          $ref: '#/components/schemas/Uuid'
+          description: A unique device ID in UUID format.
+        provider_id:
+          $ref: '#/components/schemas/Uuid'
+          description: 'A UUID for the Provider, unique within MDS. See MDS [provider list](https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/providers.csv).'
+        data_provider_id:
+          $ref: '#/components/schemas/Uuid'
+          description: 'If different than `provider_id`, a UUID for the data solution provider managing the data feed in this endpoint.'
+        last_event:
+          $ref: '#/components/schemas/Event'
+        last_telemetry:
+          $ref: '#/components/schemas/Telemetry'
+    Vehicle:
+      title: models/vehicle
+      description: Vehicle object in MDS.
+      type: object
+      x-stoplight:
+        id: e7es4zmeat7ai
+      required:
+        - device_id
+        - provider_id
+        - vehicle_id
+        - vehicle_type
+        - propulsion_types
+      allOf:
+        - properties:
+            device_id:
+              $ref: '#/components/schemas/Uuid'
+              description: A unique device ID in UUID format.
+            provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'A UUID for the Provider, unique within MDS. See MDS [provider list](https://github.com/openmobilityfoundation/mobility-data-specification/blob/main/providers.csv).'
+            data_provider_id:
+              $ref: '#/components/schemas/Uuid'
+              description: 'If different than `provider_id`, a UUID for the data solution provider managing the data feed in this endpoint.'
+            vehicle_id:
+              $ref: '#/components/schemas/String'
+              description: 'A unique vehicle identifier (visible code, license plate, etc), visible on the vehicle itself.'
+            vehicle_type:
+              $ref: '#/components/schemas/Vehicle-type'
+              description: The type of vehicle.
+            vehicle_attributes:
+              type: object
+            propulsion_types:
+              $ref: '#/components/schemas/Propulsion-type-array'
+              description: The type of propulsion; allows multiple values.
+              minItems: 1
+            accessibility_attributes:
+              type:
+                - array
+                - object
+            battery_capacity:
+              $ref: '#/components/schemas/Integer-positive'
+              description: Capacity of battery expressed as milliamp hours (mAh).
+            fuel_capacity:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'Capacity of fuel tank (liquid, solid, gaseous) expressed in liters.'
+            maximum_speed:
+              $ref: '#/components/schemas/Integer-positive'
+              description: 'Maximum speed (kph) possible with vehicle under normal, flat incline, smooth surface conditions. Applicable if the device has a built-in or intelligent speed limiter/governor.'
+        - oneOf:
+            - $ref: '#/components/schemas/Vehicle_2'
+            - $ref: '#/components/schemas/Vehicle_3'
+            - $ref: '#/components/schemas/Vehicle_4'
+            - $ref: '#/components/schemas/Vehicle_5'
+paths:
+  /vehicles:
+    post:
+      operationId: post-vehicles
+      description: Register vehicles for use in the Agency's jurisdiction.
+      summary: /vehicles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/Vehicle'
+      responses:
+        '201':
+          description: Vehicles registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          properties:
+                            item:
+                              $ref: '#/components/schemas/Vehicle'
+                          oneOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - $ref: '#/components/schemas/Error_missing_param'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '409':
+          description: Vehicle(s) already exist and an update is not possible.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_already_registered'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Vehicle'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: put-vehicles
+      description: 'Change vehicle information, should some aspect of the vehicle change, such as the `vehicle_id`. Each vehicle must already be registered.'
+      summary: /vehicles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/Vehicle'
+      responses:
+        '200':
+          description: Vehicles updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Vehicle'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: Vehicles not found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_unregistered'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Vehicle'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      operationId: get-vehicles
+      description: 'Get a list of vehicles in a Provider''s registered fleet, with properties that do not change often.'
+      summary: /vehicles
+      responses:
+        '200':
+          description: Vehicles found.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/Version'
+                  - $ref: '#/components/schemas/Paging'
+                  - type: object
+                    description: Vehicles data payload
+                    required:
+                      - vehicles
+                    properties:
+                      vehicles:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Vehicle'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: Vehicles not found.
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/vehicles/{device_id}':
+    parameters:
+      - name: device_id
+        schema:
+          $ref: '#/components/schemas/Uuid'
+        in: path
+        required: true
+        description: The `device_id` of a Provider's Vehicle.
+    get:
+      operationId: get-vehicles-device_id
+      description: 'Get the specified vehicle, with properties that do not change often.'
+      summary: '/vehicles/{device_id}'
+      responses:
+        '200':
+          description: Vehicle found.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/Version'
+                  - type: object
+                    description: Vehicle data payload
+                    required:
+                      - vehicles
+                    properties:
+                      vehicles:
+                        type: array
+                        minItems: 1
+                        maxItems: 1
+                        items:
+                          $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Bad request.
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: Vehicle not found.
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /vehicles/status:
+    get:
+      operationId: get-vehicles-status
+      description: 'Get a list of known vehicles, with specific vehicle status records that are updated frequently.'
+      summary: /vehicles/status
+      responses:
+        '200':
+          description: Vehicles found.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/Version'
+                  - $ref: '#/components/schemas/Paging'
+                  - type: object
+                    description: Vehicles status data payload
+                    required:
+                      - vehicles_status
+                    properties:
+                      vehicles_status:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Vehicle-status'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: Vehicles not found.
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/vehicles/status/{device_id}':
+    parameters:
+      - name: device_id
+        schema:
+          $ref: '#/components/schemas/Uuid'
+        in: path
+        required: true
+        description: The `device_id` of a Provider's vehicle.
+    get:
+      operationId: get-vehicles-status-device_id
+      description: 'Get the specified vehicle, with vehicle status records that are updated frequently.'
+      summary: '/vehicles/status/{device_id}'
+      responses:
+        '200':
+          description: Vehicle found.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/Version'
+                  - type: object
+                    description: Vehicles status data payload
+                    required:
+                      - vehicles_status
+                    properties:
+                      vehicles_status:
+                        type: array
+                        minItems: 1
+                        maxItems: 1
+                        items:
+                          $ref: '#/components/schemas/Vehicle-status'
+        '400':
+          description: Bad request.
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: Vehicle not found.
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /trips:
+    post:
+      operationId: post-trips
+      description: Send an update about one or more trips to the agency.
+      summary: /trips
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/Trip'
+      responses:
+        '201':
+          description: Trip(s) processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          properties:
+                            item:
+                              $ref: '#/components/schemas/Trip'
+                          oneOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - $ref: '#/components/schemas/Error_missing_param'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: The `device_id` is unregistered.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_unregistered'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Trip'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telemetry:
+    post:
+      operationId: post-telemetry
+      description: Send vehicle telemetry data in a batch for any number of vehicles in the fleet.
+      summary: /telemetry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/Telemetry'
+      responses:
+        '201':
+          description: Vehicle telemetry processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          properties:
+                            item:
+                              $ref: '#/components/schemas/Telemetry'
+                          oneOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - $ref: '#/components/schemas/Error_missing_param'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: The `device_id` is unregistered.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_unregistered'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Telemetry'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /events:
+    post:
+      operationId: post-events
+      description: Send vehicle state change events for multiple vehicles.
+      summary: /events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: Events processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          properties:
+                            item:
+                              $ref: '#/components/schemas/Event'
+                          oneOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - $ref: '#/components/schemas/Error_missing_param'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: The `device_id` is unregistered.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_unregistered'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Event'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /stops:
+    post:
+      operationId: post-stops
+      description: 'Allows an agency to register city-managed Stops, or a provider to register self-managed Stops.'
+      summary: /stops
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/Stop'
+      responses:
+        '201':
+          description: Stops registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          properties:
+                            item:
+                              $ref: '#/components/schemas/Stop'
+                          oneOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - $ref: '#/components/schemas/Error_missing_param'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '409':
+          description: A stop with `stop_id` is already registered.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_already_registered'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Stop'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: put-stops
+      description: Update stop information. Each stop must already be registered.
+      summary: /stops
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/Mutable-stop'
+      responses:
+        '200':
+          description: Stop(s) updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          properties:
+                            item:
+                              $ref: '#/components/schemas/Mutable-stop'
+                          oneOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - $ref: '#/components/schemas/Error_missing_param'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: This `stop_id` is unregistered
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_unregistered'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Mutable-stop'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      operationId: get-stops
+      description: Get a list of all stop records.
+      summary: /stops
+      responses:
+        '200':
+          description: Stops found.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/Version'
+                  - type: object
+                    description: Stops data payload
+                    required:
+                      - stops
+                    properties:
+                      stops:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Stop'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: Stops not found.
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/stops/{stop_id}':
+    parameters:
+      - name: stop_id
+        schema:
+          $ref: '#/components/schemas/Uuid'
+        in: path
+        required: true
+        description: The `stop_id` for a Stop.
+    get:
+      operationId: get-stops-stop_id
+      description: Get information about the specified stop.
+      summary: '/stops/{stop_id}'
+      responses:
+        '200':
+          description: Stop found.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/Version'
+                  - type: object
+                    description: Stops data payload
+                    required:
+                      - stops
+                    properties:
+                      stops:
+                        type: array
+                        minItems: 1
+                        maxItems: 1
+                        items:
+                          $ref: '#/components/schemas/Stop'
+        '400':
+          description: Bad request.
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '404':
+          description: Stop not found.
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /reports:
+    post:
+      operationId: post-reports
+      description: Allows an agency to register aggregated report counts in CSV structure.
+      summary: /reports
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              $ref: '#/components/schemas/Report'
+      responses:
+        '201':
+          description: Report registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulk'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Bulk'
+                  - required:
+                      - failures
+                    properties:
+                      failures:
+                        minItems: 1
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Error_bad_param'
+                            - properties:
+                                item:
+                                  $ref: '#/components/schemas/Report'
+        '401':
+          description: 'Unauthorized: Invalid, expired, or insufficient scope of token.'
+        '406':
+          description: MDS version in Accept header is unsupported or invalid.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
