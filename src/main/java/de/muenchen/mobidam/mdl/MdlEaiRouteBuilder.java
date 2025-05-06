@@ -29,21 +29,25 @@ import de.muenchen.mobidam.eai.common.exception.MobidamSecurityException;
 import de.muenchen.mobidam.s3.S3ObjectPathBuilder;
 import javax.net.ssl.SSLException;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws2.s3.AWS2S3Constants;
-import org.apache.camel.http.common.HttpMethods;
 import org.apache.camel.impl.engine.DefaultStreamCachingStrategy;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.StreamCachingStrategy;
 import org.springframework.stereotype.Component;
+
+import java.io.InputStream;
 
 @Component
 public class MdlEaiRouteBuilder extends RouteBuilder {
 
-    public static final String MOBIDAM_ROUTE_ID = "Interface-Mdl-Info";
+    public static final String MOBIDAM_REQUEST_ROUTE_ID = "Interface-Mdl-Request";
     public static final String MOBIDAM_ENDPOINT_S3_ID = "Endpoint-S3";
     public static final String MOBIDAM_ENDPOINT_S3_QUARANTINE_ID = "Endpoint-S3-Quarantine";
+    public static final String RECEIVED_DATA_ROUTE = "direct:receivedDataHandler";
+    public static final String MOBIDAM_RESPONSE_ROUTE_ID = "Interface-Mdl-Response";
+    public static final String ERROR_HANDLER_ROUTE = "direct:handleError";
 
     @Override
     public void configure() {
@@ -69,18 +73,25 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
 
         onException(Exception.class, SSLException.class)
                 .handled(true)
-                .to("direct:handleError");
+                .to(ERROR_HANDLER_ROUTE);
 
         from("{{de.muenchen.mobidam.integration.job-execute-route}}")
-                .routeId(MOBIDAM_ROUTE_ID)
+                .routeId(MOBIDAM_REQUEST_ROUTE_ID)
                 .bean("sstManagementIntegrationServiceFacade", "isActivated").id("sstManagementIntegrationServiceFacade.isActivated")
                 .choice().when(simple("${body} == 'TRUE'")).id("choice.isActivated")
-                .bean("interfaceMessageFactory", "mdlMessageStart").id("interfaceMessageFactory.start")
-                .bean("sstManagementIntegrationServiceFacade", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.start")
-                .setBody(simple("${null}"))
-                .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-                .toD(String.format("${header.%s.url}", CommonConstants.INTERFACE_TYPE))
+                    .bean("interfaceMessageFactory", "mdlMessageStart").id("interfaceMessageFactory.start")
+                    .bean("sstManagementIntegrationServiceFacade", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.start")
+                    .setBody(simple("${null}"))
+                    .process("providerRequests")
+                .otherwise()
+                    .log(LoggingLevel.DEBUG, Constants.MOBIDAM_LOGGER, String.format("${header.%s.mobidamSstId} is not active.", CommonConstants.INTERFACE_TYPE))
+                .end();
+
+        from(RECEIVED_DATA_ROUTE)
+                .routeId(MOBIDAM_RESPONSE_ROUTE_ID)
                 .setHeader(CommonConstants.HEADER_BUCKET_NAME, simple(String.format("${header.%s.s3Bucket}", CommonConstants.INTERFACE_TYPE)))
+                .marshal().json(JsonLibrary.Jackson)
+                .convertBodyTo(InputStream.class)
                 .process("s3CredentialProvider").id("s3CredentialProvider")
                 .process("resourceTypeProcessor").id("resourceTypeProcessor")
                 .toD(String.format("micrometer:timer:mobidam_sst_${header.%s.identifier}_codedetection_seconds?action=start", CommonConstants.INTERFACE_TYPE))
@@ -93,19 +104,19 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .bean("interfaceMessageFactory", "mdlMessageSuccess")
                 .bean("sstManagementIntegrationService", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.success")
                 .bean("interfaceMessageFactory", "mdlMessageEnd")
-                .bean("sstManagementIntegrationService", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.end")
-                .otherwise()
-                .log(LoggingLevel.DEBUG, Constants.MOBIDAM_LOGGER, String.format("${header.%s.mobidamSstId} is not active.", CommonConstants.INTERFACE_TYPE))
-                .end();
+                .bean("sstManagementIntegrationService", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.end");
 
-        from("direct:handleError")
+
+        from(ERROR_HANDLER_ROUTE)
                 .routeId("Error-Handler")
                 .bean("interfaceMessageFactory", "mdlMessageError")
                 .bean("sstManagementIntegrationService", "logDatentransfer")
                 .log(LoggingLevel.ERROR, "${exception}")
                 .bean("interfaceMessageFactory", "mdlMessageEnd")
                 .bean("sstManagementIntegrationService", "logDatentransfer");
+
         //  spotless:on
+
 
     }
 }

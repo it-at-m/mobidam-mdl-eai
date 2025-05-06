@@ -22,7 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 class EaiTest {
 
     @SuppressWarnings("unused") // field is auto-injected by camel
-    @Produce(EaiRouteBuilder.DIRECT_ROUTE)
+//    @Produce(MdlEaiRouteBuilder.DIRECT_ROUTE)
     private ProducerTemplate producer;
 
     @SuppressWarnings("unused") // field is auto-injected by camel

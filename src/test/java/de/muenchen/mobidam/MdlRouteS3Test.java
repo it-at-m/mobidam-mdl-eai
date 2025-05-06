@@ -109,7 +109,7 @@ class MdlRouteS3Test {
     void test_RouteMdlInfoToS3Success() throws Exception {
 
         startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
+        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_REQUEST_ROUTE_ID,
                 a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_ID).replace().toD("mock:s3Destination"));
         camelContext.start();
 
@@ -151,7 +151,7 @@ class MdlRouteS3Test {
     void test_RouteMdlInfoToS3Deactivated() throws Exception {
 
         startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
+        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_REQUEST_ROUTE_ID,
                 a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_ID).replace().toD("mock:s3Destination"));
         camelContext.start();
 
@@ -175,7 +175,7 @@ class MdlRouteS3Test {
     void test_RouteMdlInfoToS3Error() throws Exception {
 
         startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
+        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_REQUEST_ROUTE_ID,
                 a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_ID).replace().toD("mock:s3Destination"));
         camelContext.start();
 
@@ -203,7 +203,7 @@ class MdlRouteS3Test {
     void test_RouteMdlInfoToSecurityException() throws Exception {
 
         startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
+        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_REQUEST_ROUTE_ID,
                 a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_QUARANTINE_ID).replace().toD("mock:s3Destination"));
         camelContext.start();
 
