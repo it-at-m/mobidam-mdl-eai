@@ -1,11 +1,10 @@
 package de.muenchen.mobidam.mdl;
 
+import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.client.ProviderCache;
 import de.muenchen.mobidam.client.gen.api.DefaultApi;
 import de.muenchen.mobidam.client.gen.model.GetVehicles200Response;
-import de.muenchen.mobidam.client.gen.model.GetVehiclesStatus200Response;
 import de.muenchen.mobidam.config.InterfaceDTO;
-import de.muenchen.mobidam.eai.common.CommonConstants;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.camel.*;
@@ -35,46 +34,19 @@ public class ProviderRequests implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
 
-        Optional<InterfaceDTO> providerInterface = Optional.ofNullable(exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class));
+        Optional<InterfaceDTO> providerInterface = Optional.ofNullable(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class));
 
         if (providerInterface.isPresent()) {
 
             Optional<DefaultApi> provider = providerCache.getProvider(providerInterface.get());
-
             vehicles(exchange, provider, providerInterface);
-
-//            vehiclesStatus(exchange, provider, providerInterface);
-
         }
     }
-
-//    private void vehiclesStatus(Exchange exchange, Optional<DefaultApi> provider, Optional<InterfaceDTO> providerInterface) {
-//        provider.ifPresent(interfaceProvider -> {
-//
-//            var newExchange = cloneExchange(exchange);
-//            interfaceMessageFactory.mdlMessageStart(newExchange);
-//
-//            Mono<GetVehiclesStatus200Response> vehiclesResponse = interfaceProvider.getVehiclesStatus();
-//            vehiclesResponse
-//                    .doOnError(error -> {
-//                        exchange.setException(error);
-//                        errorHandler.send(exchange);})
-//                    .subscribe(response -> {
-//
-//
-//                        adjustS3PathIdentifierWithIndex(providerInterface.get().getMobilityDataSpecificationTypes().get(2), providerInterface);
-//                        newExchange.getIn().setBody(response.getVehiclesStatus());
-//
-//                        receivedDataHandler.send(newExchange);
-//                    });
-//        } );
-//    }
 
     private void vehicles(Exchange exchange, Optional<DefaultApi> provider, Optional<InterfaceDTO> providerInterface) {
         provider.ifPresent(interfaceProvider -> {
 
             var newExchange = cloneExchange(exchange);
-//            interfaceMessageFactory.mdlMessageStart(newExchange);
 
             Mono<GetVehicles200Response> vehiclesResponse = interfaceProvider.getVehicles();
             vehiclesResponse
@@ -98,7 +70,7 @@ public class ProviderRequests implements Processor {
         });
     }
 
-    private Exchange cloneExchange(Exchange exchange) {
+    public static synchronized Exchange cloneExchange(Exchange exchange) {
         Exchange newExchange = new DefaultExchange(exchange.getContext());
         newExchange.getIn().copyFrom(exchange.getIn());
         return newExchange;

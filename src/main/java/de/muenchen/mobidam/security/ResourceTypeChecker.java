@@ -61,11 +61,10 @@ public class ResourceTypeChecker {
     private String getResourceType(final InputStream stream, String contentType, Exchange exchange) throws IOException {
 
         if (contentType != null && contentType.contains(APPLICATION_JSON_TYPE.toString())) {
-            if (detector.isValidData(stream, exchange)) {
+                /*
+                  The content type is not provided by the data provider, but in the route builder by marshal().json().
+                 */
                 return APPLICATION_JSON_TYPE.toString();
-            }
-            return "wrong-resource-type";
-
         } else
             return tika.detect(stream);
     }

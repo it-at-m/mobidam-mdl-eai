@@ -22,8 +22,8 @@
  */
 package de.muenchen.mobidam.mdl;
 
+import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.config.InterfaceDTO;
-import de.muenchen.mobidam.eai.common.CommonConstants;
 import de.muenchen.mobidam.integration.client.domain.DatentransferCreateDTO;
 import de.muenchen.mobidam.sstmanagment.EreignisTyp;
 import java.time.LocalDateTime;
@@ -42,7 +42,7 @@ public class InterfaceMessageFactory {
         dto.setEreignis(EreignisTyp.BEGINN.name());
         dto.setZeitstempel(LocalDateTime.now());
         dto.setProzessId(exchange.getExchangeId());
-        dto.setSchnittstelle(exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
+        dto.setSchnittstelle(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
         exchange.getMessage().setBody(dto);
     }
 
@@ -52,7 +52,7 @@ public class InterfaceMessageFactory {
         dto.setEreignis(EreignisTyp.ERFOLG.name());
         dto.setZeitstempel(LocalDateTime.now());
         dto.setProzessId(exchange.getExchangeId());
-        dto.setSchnittstelle(exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
+        dto.setSchnittstelle(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
         dto.setInfo(String.format("Interface status code : '%s' (%s)", exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE),
                 exchange.getIn().getHeader(AWS2S3Constants.KEY)));
         exchange.getMessage().setBody(dto);
@@ -64,7 +64,7 @@ public class InterfaceMessageFactory {
         dto.setEreignis(EreignisTyp.FEHLER.name());
         dto.setZeitstempel(LocalDateTime.now());
         dto.setProzessId(exchange.getExchangeId());
-        dto.setSchnittstelle(exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
+        dto.setSchnittstelle(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
         var ex = exchange.getException() != null ? exchange.getException() : (Exception) exchange.getAllProperties().get(Exchange.EXCEPTION_CAUGHT);
         dto.setInfo(String.format("End interface with error : %s", ex.getMessage()));
         exchange.getMessage().setBody(dto);
@@ -76,7 +76,7 @@ public class InterfaceMessageFactory {
         dto.setEreignis(EreignisTyp.ENDE.name());
         dto.setZeitstempel(LocalDateTime.now());
         dto.setProzessId(exchange.getExchangeId());
-        dto.setSchnittstelle(exchange.getIn().getHeader(CommonConstants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
+        dto.setSchnittstelle(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class).getMobidamSstId());
         exchange.getMessage().setBody(dto);
     }
 

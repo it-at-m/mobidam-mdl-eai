@@ -22,11 +22,11 @@
  */
 package de.muenchen.mobidam.security;
 
+import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.config.InterfaceDTO;
-import de.muenchen.mobidam.config.MaliciousDataRegex;
 import de.muenchen.mobidam.config.ResourceType;
+import de.muenchen.mobidam.config.MaliciousDataRegex;
 import de.muenchen.mobidam.config.ResourceTypes;
-import de.muenchen.mobidam.eai.common.CommonConstants;
 import de.muenchen.mobidam.eai.common.exception.MobidamSecurityException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +106,7 @@ public class CodeDetectionProcessorTest {
         InterfaceDTO interfaceDTO = new InterfaceDTO();
         interfaceDTO.setMaliciousCodeDetectionEnabled(true);
         interfaceDTO.setAllowedResourceTypes(allowedTypes);
-        exchange.getIn().setHeader(CommonConstants.INTERFACE_TYPE, interfaceDTO);
+        exchange.getIn().setHeader(Constants.INTERFACE_TYPE, interfaceDTO);
         return exchange;
     }
 

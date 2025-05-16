@@ -20,21 +20,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam.s3;
+package de.muenchen.mobidam.sstmanagment;
 
 import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.config.InterfaceDTO;
+import de.muenchen.mobidam.integration.client.domain.DatentransferCreateDTO;
+import de.muenchen.mobidam.integration.service.SstManagementIntegrationService;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.component.aws2.s3.AWS2S3Constants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class S3ObjectKeyProvider implements Processor {
+public class SstManagementIntegrationServiceFacade {
 
-    @Override
-    public void process(Exchange exchange) throws Exception {
-        final String objectPath = S3ObjectPathBuilder.buildFilingPath(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class));
-        exchange.getIn().setHeader(AWS2S3Constants.KEY, objectPath);
+    @Autowired
+    private SstManagementIntegrationService service;
+
+    public void isActivated(Exchange exchange) throws Exception {
+        var mdlInterface = exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class);
+        exchange.getIn().setBody(service.isActivated(mdlInterface.getMobidamSstId().toString()));
     }
+
+    public void logDatentransfer(Exchange exchange) throws Exception {
+        service.logDatentransfer(exchange.getIn().getBody(DatentransferCreateDTO.class));
+    }
+
 }

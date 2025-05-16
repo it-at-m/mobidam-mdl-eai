@@ -26,4 +26,9 @@ public class ProviderApi extends DefaultApi {
         apiClient.setBasePath(providerConfig.getUrl());
         super.setApiClient(apiClient);
     }
+
+    public ProviderApi(ApiClient apiClient) {
+        super(apiClient);
+    }
+
 }

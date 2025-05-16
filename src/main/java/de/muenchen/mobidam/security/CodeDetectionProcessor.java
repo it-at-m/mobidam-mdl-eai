@@ -25,38 +25,45 @@ package de.muenchen.mobidam.security;
 import de.muenchen.mobidam.Constants;
 import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.ResourceTypes;
-import de.muenchen.mobidam.eai.common.exception.MobidamSecurityException;
 import java.io.InputStream;
+
+import de.muenchen.mobidam.eai.common.exception.MobidamSecurityException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.StreamCache;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @RequiredArgsConstructor
 @Slf4j
-public class ResourceTypeProcessor implements Processor {
+public class CodeDetectionProcessor implements Processor {
 
-    private final ResourceTypeChecker resourceTypeChecker;
+    private final CodeDetectorFactory codeDetectorFactory;
 
     private final ResourceTypes resourceTypes;
 
     @Override
     public void process(Exchange exchange) throws Exception {
         var mdlInterface = exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class);
-        if (mdlInterface.getAllowedResourceTypes() == null) {
+        if (!mdlInterface.getMaliciousCodeDetectionEnabled()) {
             return;
         }
         StreamCache receivedStream = exchange.getIn().getBody(StreamCache.class);
         receivedStream.reset();
         InputStream stream = (InputStream) receivedStream;
-        log.debug("Checking mime type of content for interface {}", mdlInterface.getName());
-        boolean result = resourceTypeChecker.check(stream, resourceTypes.getResourceTypes(mdlInterface.getAllowedResourceTypes()), exchange);
+        MaliciousCodeDetector codeDetector = codeDetectorFactory
+                .getCodeDetector(resourceTypes.getResourceTypes(mdlInterface.getAllowedResourceTypes()).get(0));
+        boolean result = false;
+        try {
+            result = codeDetector.isValidData(stream, exchange);
+        } catch (Exception ex) {
+            log.warn("Malicious code detection failed", ex);
+        }
         if (!result) {
-            throw new MobidamSecurityException("Illegal MIME type detected in interface: " + mdlInterface.getName());
+            log.warn("Possible malicious code detected: {}", mdlInterface.getName());
+            throw new MobidamSecurityException("Possible malicious code detected in interface: " + mdlInterface.getName());
         }
     }
-
 }

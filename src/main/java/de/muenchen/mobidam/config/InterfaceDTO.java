@@ -20,21 +20,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam.s3;
+package de.muenchen.mobidam.config;
 
-import de.muenchen.mobidam.Constants;
-import de.muenchen.mobidam.config.InterfaceDTO;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.component.aws2.s3.AWS2S3Constants;
-import org.springframework.stereotype.Component;
+import java.util.List;
 
-@Component
-public class S3ObjectKeyProvider implements Processor {
+import de.muenchen.mobidam.eai.common.config.SimilarInterfaceDTO;
+import lombok.*;
 
-    @Override
-    public void process(Exchange exchange) throws Exception {
-        final String objectPath = S3ObjectPathBuilder.buildFilingPath(exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class));
-        exchange.getIn().setHeader(AWS2S3Constants.KEY, objectPath);
-    }
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
+@ToString
+public class InterfaceDTO extends SimilarInterfaceDTO {
+
+    private Integer downloadMaxMb;
+    private List<String> mobilityDataSpecificationTypes;
+    private InterfaceCredentialsDTO credentials;
+
 }

@@ -25,6 +25,7 @@ package de.muenchen.mobidam;
 public class Constants {
 
     public static final String MOBIDAM_LOGGER = "de.muenchen.mobidam";
+    public static final String INTERFACE_TYPE = "MDL_INTERFACE_TYPE";
 
     // Headers for s3 bucket credentials
     public static final String QUARANTINE_PREFIX = "quarantine/";
