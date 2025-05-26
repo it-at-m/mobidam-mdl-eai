@@ -20,32 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam.config;
+package de.muenchen.mobidam.security;
 
-import java.util.List;
-import java.util.UUID;
-import lombok.*;
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Setter
-@Getter
-@ToString
-public class InterfaceDTO {
-
-    protected UUID mobidamSstId;
-    protected String name;
-    protected String identifier;
-    protected String url;
-    protected String cronExpression;
-    protected String s3ObjectPath;
-    protected String s3DateFormat;
-    protected String s3Bucket;
-    protected List<String> allowedResourceTypes;
-    protected Boolean maliciousCodeDetectionEnabled;
-
-    private Integer downloadMaxMb;
-    private List<String> mobilityDataSpecificationTypes;
-    private InterfaceCredentialsDTO credentials;
-
+public interface CodeDetectorFactorySupplier {
+    MaliciousCodeDetector getCodeDetector(String mimeType);
 }

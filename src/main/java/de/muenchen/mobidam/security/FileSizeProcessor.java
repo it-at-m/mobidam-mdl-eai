@@ -22,12 +22,8 @@
  */
 package de.muenchen.mobidam.security;
 
-import de.muenchen.mobidam.Constants;
-import de.muenchen.mobidam.config.InterfaceDTO;
-import de.muenchen.mobidam.config.ResourceTypes;
-import de.muenchen.mobidam.exception.MobidamSecurityException;
-import java.io.InputStream;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -35,28 +31,18 @@ import org.apache.camel.StreamCache;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Slf4j
-public class ResourceTypeProcessor implements Processor {
+@Getter
+public class FileSizeProcessor implements Processor {
 
-    private final ResourceTypeChecker resourceTypeChecker;
-
-    private final ResourceTypes resourceTypes;
+    private long maxStreamSize = 0L;
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        var mdlInterface = exchange.getIn().getHeader(Constants.INTERFACE_TYPE, InterfaceDTO.class);
-        if (mdlInterface.getAllowedResourceTypes() == null) {
-            return;
-        }
-        StreamCache receivedStream = exchange.getIn().getBody(StreamCache.class);
-        receivedStream.reset();
-        InputStream stream = (InputStream) receivedStream;
-        log.debug("Checking mime type of content for interface {}", mdlInterface.getName());
-        boolean result = resourceTypeChecker.check(stream, resourceTypes.getResourceTypes(mdlInterface.getAllowedResourceTypes()), exchange);
-        if (!result) {
-            throw new MobidamSecurityException("Illegal MIME type detected in interface: " + mdlInterface.getName());
-        }
+        StreamCache stream = exchange.getMessage().getBody(StreamCache.class);
+        stream.reset();
+        maxStreamSize = Math.max(maxStreamSize, stream.length());
     }
 
 }

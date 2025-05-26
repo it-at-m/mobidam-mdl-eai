@@ -27,7 +27,7 @@ import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.ResourceTypes;
 import java.io.InputStream;
 
-import de.muenchen.mobidam.eai.common.exception.MobidamSecurityException;
+import de.muenchen.mobidam.exception.MobidamSecurityException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;

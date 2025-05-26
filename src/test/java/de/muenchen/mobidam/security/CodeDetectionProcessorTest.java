@@ -27,7 +27,7 @@ import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.ResourceType;
 import de.muenchen.mobidam.config.MaliciousDataRegex;
 import de.muenchen.mobidam.config.ResourceTypes;
-import de.muenchen.mobidam.eai.common.exception.MobidamSecurityException;
+import de.muenchen.mobidam.exception.MobidamSecurityException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;

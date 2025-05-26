@@ -22,30 +22,33 @@
  */
 package de.muenchen.mobidam.config;
 
+import de.muenchen.mobidam.eai.common.exception.MobidamException;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
-import java.util.UUID;
-import lombok.*;
+import java.util.Map;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Setter
+@Component
+@ConfigurationProperties(prefix = "de.muenchen.mobidam.data.defined-resource-types")
 @Getter
-@ToString
-public class InterfaceDTO {
+@Setter
+public class ResourceTypes {
 
-    protected UUID mobidamSstId;
-    protected String name;
-    protected String identifier;
-    protected String url;
-    protected String cronExpression;
-    protected String s3ObjectPath;
-    protected String s3DateFormat;
-    protected String s3Bucket;
-    protected List<String> allowedResourceTypes;
-    protected Boolean maliciousCodeDetectionEnabled;
+    private Map<String, ResourceType> resourceTypes;
 
-    private Integer downloadMaxMb;
-    private List<String> mobilityDataSpecificationTypes;
-    private InterfaceCredentialsDTO credentials;
+    public List<String> getResourceTypes(List<String> expectedTypes) throws MobidamException {
 
+        if (getResourceTypes() == null) {
+            throw new MobidamException("Invalid configuration of types.");
+        }
+
+        if (expectedTypes.isEmpty() || getResourceTypes().isEmpty())
+            return List.of();
+
+        return expectedTypes.stream().flatMap(type -> getResourceTypes().entrySet().stream().filter(entrySet -> entrySet.getKey().equals(type)))
+                .flatMap(entrySet -> entrySet.getValue().getAllowedMimeTypes().stream()).distinct().toList();
+    }
 }
