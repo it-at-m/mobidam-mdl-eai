@@ -425,7 +425,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>../openmobilityfoundation/mds-openapi/reference/provider.yaml</inputSpec>
+                            <inputSpec>https://raw.githubusercontent.com/it-at-m/mds-openapi/refs/heads/voi/reference/provider.yaml</inputSpec>
                             <library>webclient</library>
                             <generatorName>java</generatorName>
                             <apiPackage>de.muenchen.mobidam.client.gen.api</apiPackage>
