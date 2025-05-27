@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  */
 package de.muenchen.mobidam.mdl;
+
 import com.opencsv.CSVWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,11 +37,12 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 /*
-TODO:
-This class is the first attempt to process the MDS ModelsVehicle objects to a CSV file
-with the possibility to define the fields the should be included.
-The first next step should be to implement this processor into the EAI route, as the current version is meant for local testing.
-Further criteria could be found in the ticket MDAS-1583.
+ * TODO:
+ * This class is the first attempt to process the MDS ModelsVehicle objects to a CSV file
+ * with the possibility to define the fields the should be included.
+ * The first next step should be to implement this processor into the EAI route, as the current
+ * version is meant for local testing.
+ * Further criteria could be found in the ticket MDAS-1583.
  */
 public class ProcessToCsv implements Processor {
 
