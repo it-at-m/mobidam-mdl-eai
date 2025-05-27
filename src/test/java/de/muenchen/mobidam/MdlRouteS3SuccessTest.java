@@ -152,7 +152,7 @@ class MdlRouteS3SuccessTest {
         startMdlInfoRequest.stop();
     }
 
-   private InterfaceDTO getInterfaceDTO() {
+    private InterfaceDTO getInterfaceDTO() {
         var sst = this.interfaces.getInterfaces().get(this.interfaces.getInterfaces().keySet().iterator().next());
         sst.setIdentifier("test");
         return sst;
@@ -170,13 +170,16 @@ class MdlRouteS3SuccessTest {
 
             clonedExchange.getIn().setBody(vehicles);
             receivedDataHandler.send(clonedExchange);
-            return null;}).when(providerRequest).process(any(Exchange.class));
+            return null;
+        }).when(providerRequest).process(any(Exchange.class));
     }
 
     private void mockCredentialProvider() throws Exception {
-        Mockito.doAnswer(args -> {Exchange ex = args.getArgument(0);
+        Mockito.doAnswer(args -> {
+            Exchange ex = args.getArgument(0);
             ex.getMessage().setHeader("accessKey", "accessTestKey");
             ex.getMessage().setHeader("secretKey", "secretTestKey");
-            return null;}).when(credentialProvider).process(any(Exchange.class));
+            return null;
+        }).when(credentialProvider).process(any(Exchange.class));
     }
 }

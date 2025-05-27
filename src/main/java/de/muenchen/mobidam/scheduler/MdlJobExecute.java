@@ -62,7 +62,7 @@ public class MdlJobExecute implements Job {
                 .withHeader(Constants.INTERFACE_TYPE, getMobidamInterfaces().getInterfaces().get(identifier))
                 .build();
 
-       producer.send(exchange);
+        producer.send(exchange);
 
     }
 

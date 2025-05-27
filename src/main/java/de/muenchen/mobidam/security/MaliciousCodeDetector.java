@@ -22,9 +22,8 @@
  */
 package de.muenchen.mobidam.security;
 
-import org.apache.camel.Exchange;
-
 import java.io.InputStream;
+import org.apache.camel.Exchange;
 
 public interface MaliciousCodeDetector {
 

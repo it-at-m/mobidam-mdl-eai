@@ -27,6 +27,7 @@ import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.eai.common.CommonConstants;
 import de.muenchen.mobidam.exception.MobidamSecurityException;
 import de.muenchen.mobidam.s3.S3ObjectPathBuilder;
+import java.io.InputStream;
 import javax.net.ssl.SSLException;
 import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
@@ -36,8 +37,6 @@ import org.apache.camel.impl.engine.DefaultStreamCachingStrategy;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.StreamCachingStrategy;
 import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
 
 @Component
 public class MdlEaiRouteBuilder extends RouteBuilder {
@@ -80,12 +79,12 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .routeId(MOBIDAM_ROUTE_ID)
                 .bean("sstManagementIntegrationServiceFacade", "isActivated").id("sstManagementIntegrationServiceFacade.isActivated")
                 .choice().when(simple("${body} == 'TRUE'")).id("choice.isActivated")
-                    .bean("interfaceMessageFactory", "mdlMessageStart").id("interfaceMessageFactory.start")
-                    .bean("sstManagementIntegrationServiceFacade", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.start")
-                    .setBody(simple("${null}"))
-                    .process("providerRequests")
+                .bean("interfaceMessageFactory", "mdlMessageStart").id("interfaceMessageFactory.start")
+                .bean("sstManagementIntegrationServiceFacade", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.start")
+                .setBody(simple("${null}"))
+                .process("providerRequests")
                 .otherwise()
-                    .log(LoggingLevel.DEBUG, Constants.MOBIDAM_LOGGER, String.format("${header.%s.mobidamSstId} is not active.", Constants.INTERFACE_TYPE))
+                .log(LoggingLevel.DEBUG, Constants.MOBIDAM_LOGGER, String.format("${header.%s.mobidamSstId} is not active.", Constants.INTERFACE_TYPE))
                 .end();
 
         from(RECEIVED_DATA_ROUTE)
@@ -95,11 +94,14 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .convertBodyTo(InputStream.class)
                 .process("s3CredentialProvider").id("s3CredentialProvider")
                 /*
-                    @TODO :
-                      The issue of resource type checking needs to be reconsidered and may possibly be omitted.
-                      Our class ProviderRequests currently does not return any content type that could be meaningfully checked by our resource type checker.
-                      The generated WebClient deserializes the data stream during unmarshalling already into a data object of type ModelsVehicle.
-                      The content type currently comes in this unfinished version, which will be expanded in a follow-up ticket, from .marshal().json(JsonLibrary.Jackson).
+                 * @TODO :
+                 * The issue of resource type checking needs to be reconsidered and may possibly be omitted.
+                 * Our class ProviderRequests currently does not return any content type that could be meaningfully
+                 * checked by our resource type checker.
+                 * The generated WebClient deserializes the data stream during unmarshalling already into a data
+                 * object of type ModelsVehicle.
+                 * The content type currently comes in this unfinished version, which will be expanded in a
+                 * follow-up ticket, from .marshal().json(JsonLibrary.Jackson).
                  */
                 .process("resourceTypeProcessor").id("resourceTypeProcessor")
                 .toD(String.format("micrometer:timer:mobidam_sst_${header.%s.identifier}_codedetection_seconds?action=start", Constants.INTERFACE_TYPE))
@@ -114,7 +116,6 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .bean("interfaceMessageFactory", "mdlMessageEnd")
                 .bean("sstManagementIntegrationService", "logDatentransfer").id("sstManagementIntegrationServiceFacade.logTransfer.end");
 
-
         from(ERROR_HANDLER_ROUTE)
                 .routeId("Error-Handler")
                 .bean("interfaceMessageFactory", "mdlMessageError")
@@ -124,7 +125,6 @@ public class MdlEaiRouteBuilder extends RouteBuilder {
                 .bean("sstManagementIntegrationService", "logDatentransfer");
 
         //  spotless:on
-
 
     }
 }

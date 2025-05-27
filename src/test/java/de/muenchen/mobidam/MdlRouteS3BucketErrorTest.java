@@ -133,7 +133,8 @@ class MdlRouteS3BucketErrorTest {
         Mockito.doAnswer(mockArgs -> {
             Exchange receivedExchange = mockArgs.getArgument(0);
             receivedDataHandler.send(ProviderRequests.cloneExchange(receivedExchange));
-            return null;}).when(providerRequest).process(any(Exchange.class));
+            return null;
+        }).when(providerRequest).process(any(Exchange.class));
     }
 
 }

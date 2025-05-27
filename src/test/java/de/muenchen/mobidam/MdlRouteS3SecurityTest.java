@@ -120,7 +120,8 @@ class MdlRouteS3SecurityTest {
         Mockito.verify(this.sstService, Mockito.times(3)).logDatentransfer(datentransferCaptor.capture());
         Assertions.assertEquals(EreignisTyp.BEGINN.name(), datentransferCaptor.getAllValues().get(0).getEreignis());
         Assertions.assertEquals(EreignisTyp.FEHLER.name(), datentransferCaptor.getAllValues().get(1).getEreignis());
-        Assertions.assertEquals("End interface with error : Possible malicious code detected in interface: MDL Test", datentransferCaptor.getAllValues().get(1).getInfo());
+        Assertions.assertEquals("End interface with error : Possible malicious code detected in interface: MDL Test",
+                datentransferCaptor.getAllValues().get(1).getInfo());
         Assertions.assertEquals(EreignisTyp.ENDE.name(), datentransferCaptor.getAllValues().get(2).getEreignis());
 
         s3Destination.expectedMessageCount(1);
@@ -146,13 +147,16 @@ class MdlRouteS3SecurityTest {
 
             clonedExchange.getIn().setBody(vehicles);
             receivedDataHandler.send(clonedExchange);
-            return null;}).when(providerRequest).process(any(Exchange.class));
+            return null;
+        }).when(providerRequest).process(any(Exchange.class));
     }
 
     private void mockCredentialProvider() throws Exception {
-        Mockito.doAnswer(args -> {Exchange ex = args.getArgument(0);
+        Mockito.doAnswer(args -> {
+            Exchange ex = args.getArgument(0);
             ex.getMessage().setHeader("accessKey", "accessTestKey");
             ex.getMessage().setHeader("secretKey", "secretTestKey");
-            return null;}).when(credentialProvider).process(any(Exchange.class));
+            return null;
+        }).when(credentialProvider).process(any(Exchange.class));
     }
 }

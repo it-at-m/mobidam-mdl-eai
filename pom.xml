@@ -290,8 +290,8 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${maven-checkstyle-plugin.version}</version>
                 <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
                     <excludeGeneratedSources>true</excludeGeneratedSources>
+                    <configLocation>checkstyle.xml</configLocation>
                 </configuration>
                 <executions>
                     <execution>
@@ -425,7 +425,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>https://raw.githubusercontent.com/it-at-m/mds-openapi/refs/heads/voi/reference/provider.yaml</inputSpec>
+                            <inputSpec>../openmobilityfoundation/mds-openapi/reference/provider.yaml</inputSpec>
                             <library>webclient</library>
                             <generatorName>java</generatorName>
                             <apiPackage>de.muenchen.mobidam.client.gen.api</apiPackage>
