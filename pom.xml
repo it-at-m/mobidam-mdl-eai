@@ -291,6 +291,7 @@
                 <version>${maven-checkstyle-plugin.version}</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
+                    <excludes>**/generated-sources/**</excludes>
                 </configuration>
                 <executions>
                     <execution>
