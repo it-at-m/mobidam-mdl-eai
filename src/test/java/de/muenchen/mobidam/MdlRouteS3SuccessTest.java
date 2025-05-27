@@ -25,7 +25,8 @@ package de.muenchen.mobidam;
 import de.muenchen.mobidam.client.ProviderCache;
 import de.muenchen.mobidam.client.gen.api.DefaultApi;
 import de.muenchen.mobidam.client.gen.model.GetVehicles200Response;
-import de.muenchen.mobidam.client.gen.model.ModelsVehicle;
+
+import de.muenchen.mobidam.client.gen.model.Vehicle5;
 import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.Interfaces;
 import de.muenchen.mobidam.eai.common.CommonConstants;
@@ -164,7 +165,7 @@ class MdlRouteS3SuccessTest {
             var clonedExchange = ProviderRequests.cloneExchange(receivedExchange);
 
             var vehicles = new GetVehicles200Response();
-            var vehicle = new ModelsVehicle();
+            var vehicle = new Vehicle5();
             vehicle.setVehicleId("2024-05-14T00:00:00");
             vehicles.setVehicles(List.of(vehicle));
 

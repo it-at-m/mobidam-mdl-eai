@@ -23,7 +23,7 @@
 package de.muenchen.mobidam;
 
 import de.muenchen.mobidam.client.gen.model.GetVehicles200Response;
-import de.muenchen.mobidam.client.gen.model.ModelsVehicle;
+import de.muenchen.mobidam.client.gen.model.Vehicle5;
 import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.Interfaces;
 import de.muenchen.mobidam.eai.common.s3.S3CredentialProvider;
@@ -140,7 +140,7 @@ class MdlRouteS3SecurityTest {
             var clonedExchange = ProviderRequests.cloneExchange(receivedExchange);
 
             var vehicles = new GetVehicles200Response();
-            var vehicle = new ModelsVehicle();
+            var vehicle = new Vehicle5();
             vehicle.setVehicleId("<malicious_code>vehicle_id</malicious_code>");
             vehicles.setVehicles(List.of(vehicle));
 
