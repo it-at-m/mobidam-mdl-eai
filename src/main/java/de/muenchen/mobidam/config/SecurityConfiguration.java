@@ -52,7 +52,8 @@ public class SecurityConfiguration {
                         // allow access to single metrics values
                         AntPathRequestMatcher.antMatcher("/actuator/metrics/*"),
                         // allow access to /actuator/metrics for Prometheus monitoring in OpenShift
-                        AntPathRequestMatcher.antMatcher("/actuator/metrics"))
+                        AntPathRequestMatcher.antMatcher("/actuator/metrics"),
+                        AntPathRequestMatcher.antMatcher("/actuator/prometheus"))
                         .permitAll())
                 .build();
     }

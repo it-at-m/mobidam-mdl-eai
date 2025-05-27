@@ -22,10 +22,13 @@
  */
 package de.muenchen.mobidam;
 
+import io.micrometer.observation.annotation.Observed;
+import org.apache.camel.observation.starter.CamelObservation;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+@CamelObservation
 public class Application {
     public static void main(final String[] args) {
         SpringApplication.run(Application.class, args);

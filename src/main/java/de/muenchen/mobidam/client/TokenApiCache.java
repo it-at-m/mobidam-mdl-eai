@@ -20,20 +20,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam.config;
+package de.muenchen.mobidam.client;
 
+import java.util.HashMap;
 import java.util.Map;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "de.muenchen.mobidam.integration")
-@Getter
-@Setter
-public class Interfaces {
+public class TokenApiCache {
 
-    private Map<String, InterfaceDTO> interfaces;
+    private final Map<String, TokenApi> tokenApis = new HashMap<String, TokenApi>();
 
+    public Optional<TokenApi> getTokenApi(String providerIdentifier) {
+        return Optional.ofNullable(tokenApis.get(providerIdentifier));
+    }
+
+    public void registerProviderIdentifierApi(String providerIdentifier, TokenApi api) {
+        tokenApis.put(providerIdentifier, api);
+    }
 }

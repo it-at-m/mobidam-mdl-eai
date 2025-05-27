@@ -22,13 +22,15 @@ camel:
 
 de.muenchen.mobidam:
   integration:
+    job-execute-route: direct:mdl-info
+    scheduler-group: schedulerTestGroup
     baseUrl: https://...
     interfaces:
       mdlTest:
         mobidam-sst-id: 999fcf2d-25bb-4fa9-85ff-f7ed12349999
         name: MDL Test
         identifier: mdlTest
-        mdl-url: mock:mdlInfo
+        url: mock:mdlInfo
         cron-expression: '0 0 0 ? * *'
         s3-object-path: MDAS/Mdl/dev/test.json
         s3-date-format: yyyyMMdd_HHmmss

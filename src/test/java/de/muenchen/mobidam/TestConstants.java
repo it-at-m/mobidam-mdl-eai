@@ -20,20 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam.config;
+package de.muenchen.mobidam;
 
-import java.util.Map;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-@Component
-@ConfigurationProperties(prefix = "de.muenchen.mobidam.integration")
-@Getter
-@Setter
-public class Interfaces {
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class TestConstants {
 
-    private Map<String, InterfaceDTO> interfaces;
+    public static final String SPRING_TEST_PROFILE = "test";
+
+    public static final String SPRING_JSON_LOGGING_PROFILE = "json-logging";
 
 }

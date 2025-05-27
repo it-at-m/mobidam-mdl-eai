@@ -22,7 +22,7 @@
  */
 package de.muenchen.mobidam.config;
 
-import de.muenchen.mobidam.exception.MobidamException;
+import de.muenchen.mobidam.eai.common.exception.MobidamException;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;

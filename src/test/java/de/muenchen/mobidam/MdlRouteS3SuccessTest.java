@@ -22,20 +22,19 @@
  */
 package de.muenchen.mobidam;
 
+import de.muenchen.mobidam.client.ProviderCache;
+import de.muenchen.mobidam.client.gen.api.DefaultApi;
+import de.muenchen.mobidam.client.gen.model.GetVehicles200Response;
+import de.muenchen.mobidam.client.gen.model.ModelsVehicle;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.Interfaces;
-import de.muenchen.mobidam.config.ResourceTypes;
 import de.muenchen.mobidam.eai.common.CommonConstants;
-import de.muenchen.mobidam.eai.common.config.EnvironmentReader;
-import de.muenchen.mobidam.exception.MobidamSecurityException;
+import de.muenchen.mobidam.eai.common.s3.S3CredentialProvider;
 import de.muenchen.mobidam.integration.client.domain.DatentransferCreateDTO;
 import de.muenchen.mobidam.integration.service.SstManagementIntegrationService;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
 import de.muenchen.mobidam.mdl.MdlEaiRouteBuilder;
-import de.muenchen.mobidam.security.ResourceTypeProcessor;
+import de.muenchen.mobidam.mdl.ProviderRequests;
 import de.muenchen.mobidam.sstmanagment.EreignisTyp;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import org.apache.camel.*;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.ExchangeBuilder;
@@ -58,14 +57,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import static org.mockito.ArgumentMatchers.isA;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @SpringBootTest
 @CamelSpringBootTest
 @UseAdviceWith
-class MdlRouteS3Test {
+class MdlRouteS3SuccessTest {
 
     @Autowired
     private CamelContext camelContext;
@@ -89,23 +94,26 @@ class MdlRouteS3Test {
     private SstManagementIntegrationService sstService;
 
     @MockBean
-    private ResourceTypeProcessor resourceTypeProcessor;
+    private ProviderCache providerCache;
 
     @MockBean
-    private ResourceTypes resourceTypes;
+    private S3CredentialProvider credentialProvider;
+
+    @MockBean
+    private ProviderRequests providerRequest;
+
+    @Produce(MdlEaiRouteBuilder.RECEIVED_DATA_ROUTE)
+    private ProducerTemplate receivedDataHandler;
 
     @Captor
     private ArgumentCaptor<DatentransferCreateDTO> datentransferCaptor;
-
-    @MockBean
-    private EnvironmentReader environmentReader;
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void test_RouteMdlInfoToS3Success() throws Exception {
 
         startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
+        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_RESPONSE_ROUTE_ID,
                 a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_ID).replace().toD("mock:s3Destination"));
         camelContext.start();
 
@@ -114,8 +122,9 @@ class MdlRouteS3Test {
                 .build();
 
         Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(true);
-        Mockito.when(environmentReader.getEnvironmentVariable(Mockito.any())).thenReturn("foo");
-        Mockito.when(resourceTypes.getResourceTypes(Mockito.any())).thenReturn(List.of("application/json", "text/plain"));
+        Mockito.when(providerCache.getProvider(getInterfaceDTO())).thenReturn(Optional.of(new DefaultApi()));
+        mockCredentialProvider();
+        mockProviderRequest();
 
         mdlInfo.whenAnyExchangeReceived(new MdlInfoMock());
         s3Destination.expectedMessageCount(1);
@@ -128,8 +137,8 @@ class MdlRouteS3Test {
         Assertions.assertTrue(content.contains("2024-05-14T00:00:00"));
 
         Assertions.assertEquals("int-mdasc-mdasdev", exchange.getIn().getHeader(CommonConstants.HEADER_BUCKET_NAME));
-        Assertions.assertEquals("foo", exchange.getIn().getHeader(CommonConstants.HEADER_ACCESS_KEY));
-        Assertions.assertEquals("foo", exchange.getIn().getHeader(CommonConstants.HEADER_SECRET_KEY));
+        Assertions.assertEquals("accessTestKey", exchange.getIn().getHeader(CommonConstants.HEADER_ACCESS_KEY));
+        Assertions.assertEquals("secretTestKey", exchange.getIn().getHeader(CommonConstants.HEADER_SECRET_KEY));
         Assertions.assertTrue(exchange.getIn().getHeader(AWS2S3Constants.KEY, String.class).startsWith("MDAS/Mdl/dev/"));
         Assertions.assertTrue(exchange.getIn().getHeader(AWS2S3Constants.KEY, String.class).endsWith("test.json"));
 
@@ -137,96 +146,40 @@ class MdlRouteS3Test {
         Mockito.verify(this.sstService, Mockito.times(3)).logDatentransfer(datentransferCaptor.capture());
         Assertions.assertEquals(EreignisTyp.BEGINN.name(), datentransferCaptor.getAllValues().get(0).getEreignis());
         Assertions.assertEquals(EreignisTyp.ERFOLG.name(), datentransferCaptor.getAllValues().get(1).getEreignis());
+        Assertions.assertEquals("Interface status code : 'null' (MDAS/Mdl/dev/test.json)", datentransferCaptor.getAllValues().get(1).getInfo());
         Assertions.assertEquals(EreignisTyp.ENDE.name(), datentransferCaptor.getAllValues().get(2).getEreignis());
 
         startMdlInfoRequest.stop();
-    }
-
-    @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void test_RouteMdlInfoToS3Deactivated() throws Exception {
-
-        startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
-                a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_ID).replace().toD("mock:s3Destination"));
-        camelContext.start();
-
-        var mdlRequest = ExchangeBuilder.anExchange(camelContext)
-                .withHeader(Constants.INTERFACE_TYPE, getInterfaceDTO())
-                .build();
-
-        Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(false);
-
-        startMdlInfoRequest.send(mdlRequest);
-
-        Mockito.verify(this.sstService, Mockito.times(1)).isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999");
-        Mockito.verify(this.sstService, Mockito.times(0)).logDatentransfer(datentransferCaptor.capture());
-
-        startMdlInfoRequest.stop();
-
-    }
-
-    @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void test_RouteMdlInfoToS3Error() throws Exception {
-
-        startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
-                a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_ID).replace().toD("mock:s3Destination"));
-        camelContext.start();
-
-        var mdlRequest = ExchangeBuilder.anExchange(camelContext)
-                .withHeader(Constants.INTERFACE_TYPE, getInterfaceDTO())
-                .build();
-
-        Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(true);
-
-        startMdlInfoRequest.send(mdlRequest);
-
-        Mockito.verify(this.sstService, Mockito.times(1)).isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999");
-        Mockito.verify(this.sstService, Mockito.times(3)).logDatentransfer(datentransferCaptor.capture());
-        Assertions.assertEquals(EreignisTyp.BEGINN.name(), datentransferCaptor.getAllValues().get(0).getEreignis());
-        Assertions.assertEquals(EreignisTyp.FEHLER.name(), datentransferCaptor.getAllValues().get(1).getEreignis());
-        Assertions.assertEquals(EreignisTyp.ENDE.name(), datentransferCaptor.getAllValues().get(2).getEreignis());
-        Assertions.assertEquals("End interface with error : Bucket not configured: int-mdasc-mdasdev", datentransferCaptor.getAllValues().get(1).getInfo());
-
-        startMdlInfoRequest.stop();
-
-    }
-
-    @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void test_RouteMdlInfoToSecurityException() throws Exception {
-
-        startMdlInfoRequest.start();
-        AdviceWith.adviceWith(camelContext, MdlEaiRouteBuilder.MOBIDAM_ROUTE_ID,
-                a -> a.weaveById(MdlEaiRouteBuilder.MOBIDAM_ENDPOINT_S3_QUARANTINE_ID).replace().toD("mock:s3Destination"));
-        camelContext.start();
-
-        var mdlRequest = ExchangeBuilder.anExchange(camelContext)
-                .withHeader(Constants.INTERFACE_TYPE, getInterfaceDTO())
-                .build();
-
-        Mockito.when(sstService.isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999")).thenReturn(true);
-
-        Mockito.doThrow(new MobidamSecurityException("danger!")).when(resourceTypeProcessor).process(isA(Exchange.class));
-
-        startMdlInfoRequest.send(mdlRequest);
-
-        Mockito.verify(this.sstService, Mockito.times(1)).isActivated("999fcf2d-25bb-4fa9-85ff-f7ed12349999");
-        Mockito.verify(this.sstService, Mockito.times(3)).logDatentransfer(datentransferCaptor.capture());
-        Assertions.assertEquals(EreignisTyp.BEGINN.name(), datentransferCaptor.getAllValues().get(0).getEreignis());
-        Assertions.assertEquals(EreignisTyp.FEHLER.name(), datentransferCaptor.getAllValues().get(1).getEreignis());
-        Assertions.assertEquals(EreignisTyp.ENDE.name(), datentransferCaptor.getAllValues().get(2).getEreignis());
-
-        s3Destination.expectedMessageCount(1);
-        startMdlInfoRequest.stop();
-
     }
 
     private InterfaceDTO getInterfaceDTO() {
         var sst = this.interfaces.getInterfaces().get(this.interfaces.getInterfaces().keySet().iterator().next());
         sst.setIdentifier("test");
         return sst;
+    }
+
+    private void mockProviderRequest() throws Exception {
+        Mockito.doAnswer(mockArgs -> {
+            Exchange receivedExchange = mockArgs.getArgument(0);
+            var clonedExchange = ProviderRequests.cloneExchange(receivedExchange);
+
+            var vehicles = new GetVehicles200Response();
+            var vehicle = new ModelsVehicle();
+            vehicle.setVehicleId("2024-05-14T00:00:00");
+            vehicles.setVehicles(List.of(vehicle));
+
+            clonedExchange.getIn().setBody(vehicles);
+            receivedDataHandler.send(clonedExchange);
+            return null;
+        }).when(providerRequest).process(any(Exchange.class));
+    }
+
+    private void mockCredentialProvider() throws Exception {
+        Mockito.doAnswer(args -> {
+            Exchange ex = args.getArgument(0);
+            ex.getMessage().setHeader("accessKey", "accessTestKey");
+            ex.getMessage().setHeader("secretKey", "secretTestKey");
+            return null;
+        }).when(credentialProvider).process(any(Exchange.class));
     }
 }

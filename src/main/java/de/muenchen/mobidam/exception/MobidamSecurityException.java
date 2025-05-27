@@ -22,6 +22,8 @@
  */
 package de.muenchen.mobidam.exception;
 
+import de.muenchen.mobidam.eai.common.exception.MobidamException;
+
 public class MobidamSecurityException extends MobidamException {
 
     public MobidamSecurityException(String message) {

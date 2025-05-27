@@ -22,18 +22,30 @@
  */
 package de.muenchen.mobidam.config;
 
-import java.util.Map;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import java.util.List;
+import java.util.UUID;
+import lombok.*;
 
-@Component
-@ConfigurationProperties(prefix = "de.muenchen.mobidam.integration")
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Setter
-public class Interfaces {
+@Getter
+@ToString
+public class InterfaceDTO {
 
-    private Map<String, InterfaceDTO> interfaces;
+    protected UUID mobidamSstId;
+    protected String name;
+    protected String identifier;
+    protected String url;
+    protected String cronExpression;
+    protected String s3ObjectPath;
+    protected String s3DateFormat;
+    protected String s3Bucket;
+    protected List<String> allowedResourceTypes;
+    protected Boolean maliciousCodeDetectionEnabled;
+
+    private Integer downloadMaxMb;
+    private List<String> mobilityDataSpecificationTypes;
+    private InterfaceCredentialsDTO credentials;
 
 }

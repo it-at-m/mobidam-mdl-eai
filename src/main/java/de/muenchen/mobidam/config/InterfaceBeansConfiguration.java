@@ -23,10 +23,10 @@
 package de.muenchen.mobidam.config;
 
 import de.muenchen.mobidam.Constants;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
 import de.muenchen.mobidam.scheduler.MdlJobExecute;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
@@ -49,12 +49,12 @@ public class InterfaceBeansConfiguration implements BeanFactoryAware {
         this.interfaces = interfaces;
     }
 
-    private Interfaces interfaces;
+    private final Interfaces interfaces;
 
     private BeanFactory beanFactory;
 
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) {
+    public void setBeanFactory(@NotNull BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 

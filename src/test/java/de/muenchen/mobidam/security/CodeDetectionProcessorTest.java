@@ -23,17 +23,15 @@
 package de.muenchen.mobidam.security;
 
 import de.muenchen.mobidam.Constants;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.ResourceType;
 import de.muenchen.mobidam.config.MaliciousDataRegex;
 import de.muenchen.mobidam.config.ResourceTypes;
 import de.muenchen.mobidam.exception.MobidamSecurityException;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.converter.stream.InputStreamCache;
 import org.apache.camel.impl.DefaultCamelContext;

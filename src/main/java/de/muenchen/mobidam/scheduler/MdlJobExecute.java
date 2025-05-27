@@ -23,8 +23,8 @@
 package de.muenchen.mobidam.scheduler;
 
 import de.muenchen.mobidam.Constants;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.Interfaces;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
 import de.muenchen.mobidam.mdl.MdlEaiRouteBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -63,6 +63,7 @@ public class MdlJobExecute implements Job {
                 .build();
 
         producer.send(exchange);
+
     }
 
 }

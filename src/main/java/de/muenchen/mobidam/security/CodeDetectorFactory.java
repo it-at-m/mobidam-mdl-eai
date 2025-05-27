@@ -30,12 +30,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CodeDetectorFactory {
+public class CodeDetectorFactory implements CodeDetectorFactorySupplier {
 
     private final DefaultMaliciousCodeDetector defaultMaliciousCodeDetector;
 
     private final Map<String, MaliciousCodeDetector> map = new HashMap<>();
 
+    @Override
     public MaliciousCodeDetector getCodeDetector(final String mimeType) {
         return map.getOrDefault(mimeType, defaultMaliciousCodeDetector);
     }

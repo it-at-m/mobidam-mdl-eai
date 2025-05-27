@@ -23,9 +23,9 @@
 package de.muenchen.mobidam.security;
 
 import de.muenchen.mobidam.Constants;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import de.muenchen.mobidam.config.ResourceTypes;
 import de.muenchen.mobidam.exception.MobidamSecurityException;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
 import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

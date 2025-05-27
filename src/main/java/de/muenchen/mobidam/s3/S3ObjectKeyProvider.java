@@ -23,7 +23,7 @@
 package de.muenchen.mobidam.s3;
 
 import de.muenchen.mobidam.Constants;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.aws2.s3.AWS2S3Constants;

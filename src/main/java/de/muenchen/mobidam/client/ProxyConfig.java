@@ -20,20 +20,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam.config;
+package de.muenchen.mobidam.client;
 
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "de.muenchen.mobidam.integration")
+@ConfigurationProperties(prefix = "camel.component.http")
 @Getter
 @Setter
-public class Interfaces {
+public class ProxyConfig {
 
-    private Map<String, InterfaceDTO> interfaces;
+    private String proxyAuthHost;
+    private Integer proxyAuthPort;
+    private String proxyAuthScheme;
 
 }

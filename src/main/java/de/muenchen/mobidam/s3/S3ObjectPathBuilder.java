@@ -23,7 +23,7 @@
 package de.muenchen.mobidam.s3;
 
 import de.muenchen.mobidam.Constants;
-import de.muenchen.mobidam.mdl.InterfaceDTO;
+import de.muenchen.mobidam.config.InterfaceDTO;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 

@@ -20,20 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.muenchen.mobidam.config;
+package de.muenchen.mobidam.security;
 
-import java.util.Map;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-
-@Component
-@ConfigurationProperties(prefix = "de.muenchen.mobidam.integration")
-@Getter
-@Setter
-public class Interfaces {
-
-    private Map<String, InterfaceDTO> interfaces;
-
+public interface CodeDetectorFactorySupplier {
+    MaliciousCodeDetector getCodeDetector(String mimeType);
 }
