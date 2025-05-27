@@ -43,6 +43,10 @@ import org.springframework.stereotype.Component;
  * The first next step should be to implement this processor into the EAI route, as the current
  * version is meant for local testing.
  * Further criteria could be found in the ticket MDAS-1583.
+ * TODO: 
+ * If the project is continued, it would be worth considering how the CSV conversion
+ * can be implemented with Camel Bindy and without the intermediate step of file output and
+ * instead in-memory.
  */
 public class ProcessToCsv implements Processor {
 
