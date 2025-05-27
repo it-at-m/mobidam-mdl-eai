@@ -62,6 +62,7 @@ public class ResourceTypeChecker {
 
         if (contentType != null && contentType.contains(APPLICATION_JSON_TYPE.toString())) {
             /*
+             * TODO :
              * The content type is not provided by the data provider, but in the route builder by
              * marshal().json().
              */
